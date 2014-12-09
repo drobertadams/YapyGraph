@@ -39,10 +39,10 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def addEdge(self, n, m):
         """
-        Adds a directional edge from vertex n to vertex m. If 
-        neither vertex exists, they are created.
-        Inputs: n, m - endpoints of the edge; can be either new Vertex objects
-            vid(str) of existing vertices.
+        Adds a directional edge from Vertex n to Vertex m. If 
+        neither vertex exist in the graph, they are added.
+        Inputs: n, m - endpoints of the edge; can be either new Vertex 
+            objects or the id of existing vertices.
         Outputs: none
         """
 
@@ -58,6 +58,10 @@ class Graph(object):
 
         if n.id not in self._edges:
             self._edges[n.id] = []
+            self.neighbors[n.id] = []
+        if m.id not in self.neighbors:
+            self.neighbors[m.id] = []
+
         self._edges[n.id].append(m)
 
         self.neighbors[n.id].append(m)
@@ -70,48 +74,50 @@ class Graph(object):
     def addVertex(self, vertex):
         """
         Adds a new vertex to the graph.
-        Input: vertex - Vertex object to add
-        Output: The vertex that was just created
+        Inputs: vertex - Vertex object to add
+        Outputs: The Vertex that was just created
+        Raises: TypeError if a non-Vertex is passed.
         """
-
         if not isinstance(vertex, Vertex):
             raise TypeError('addVertex requires a Vertex object')
 
         if vertex.id not in self.vertices:
             self.vertices[vertex.id] = vertex
-            self.neighbors[vertex.id] = []
         else:
             raise IndexError("Vertex %s already exists in the graph" % vertex.id)
 
         return vertex
 
     #--------------------------------------------------------------------------
-# TODO : Write a test for this.
     def deleteEdge(self, startVID, endVID):
         """
-        Removes the edge from the given vertices. Does nothing if the edge
-        doesn't exist.
+        Removes the edge from between the given Vertices. Does nothing if 
+        the edge doesn't exist.
         Inputs: startVID, endVID - vertex IDs
-        Outputs: none
+        Outputs: False if the edge doesn't exist
         """
 
         if startVID not in self._edges:
             # startVID has no edges from it
-            return
+            return False
 
         startVertex = self.vertices[startVID]
         endVertex = self.vertices[endVID]
 
         self._edges[startVID].remove(endVertex)
-        if len(self._edges[startVID]) == 0: # just deleted the last edge from n.id
-            logging.debug('removed last edge from %s' % startVID)
-            self._edges.pop(startVID)    # remove n.id from the list of edges
 
         self.neighbors[startVID].remove(endVertex)
         self.neighbors[endVID].remove(startVertex)
 
         startVertex.degree = startVertex.degree - 1
         endVertex.degree = endVertex.degree - 1
+
+        if len(self._edges[startVID]) == 0:
+            self._edges.pop(startVID)
+            self.neighbors.pop(startVID)
+
+        if len(self.neighbors[endVID]) == 0:
+            self.neighbors.pop(endVID)
 
     #--------------------------------------------------------------------------
     def deleteVertex(self, vid):
