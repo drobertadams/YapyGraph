@@ -121,23 +121,37 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def deleteVertex(self, vid):
-            """
-            Deletes the vertex with the given vid along with all edges to and from it.
-            Inputs: vertex ID (string) vid
-            Outputs: nothing
-            Raises: KeyError if vid is not a valid vertex id
-            """
-            if vid not in self.vertices:
-                    raise KeyError('vertex id %s does not appear in this graph' % vid)
+        """
+        Deletes the vertex with the given vid along with all edges to and 
+        from it.
+        Inputs: vertex ID (string) 
+        Outputs: nothing
+        Raises: KeyError if vid is not a valid vertex id
+        """
+        if vid not in self.vertices:
+            raise KeyError('vertex id %s does not appear in this graph' % vid)
 
-            self.vertices.pop(vid, None)
-            if vid in self._edges:
-                    self._edges.pop(vid)
+        self.vertices.pop(vid, None)
 
-            for vectorID,edgeList in self._edges.items():
-                    edgeList[:] = (vertex for vertex in edgeList if vertex.id != vid)
-                    if len(edgeList) == 0:
-                            self._edges.pop(vectorID)
+        # Remove vid as the start of any edge.
+        if vid in self._edges:
+            self._edges.pop(vid)
+
+        # Remove vid as the end of any edge.
+        for vectorID,edgeList in self._edges.items():
+            edgeList[:] = (vertex for vertex in edgeList if vertex.id != vid)
+            if len(edgeList) == 0:
+                self._edges.pop(vectorID)
+
+        # Remove vid from list of neighbors.
+        self.neighbors.pop(vid, None)
+
+        # Remove vid as any neighbor.
+        for vectorID,neighborList in self.neighbors.items():
+            neighborList[:] = (vertex for vertex in neighborList if vertex.id != vid)
+            if len(neighborList) == 0:
+                self.neighbors.pop(vectorID)
+
 
     #--------------------------------------------------------------------------
     @property

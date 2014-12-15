@@ -79,19 +79,29 @@ class TestGraphClass(unittest.TestCase):
         self.assertTrue('u1' not in self.g.neighbors)
         self.assertTrue('u3' not in self.g.neighbors)
 
-# TODO: LEFT OFF HERE
-
     def testDeleteVertex(self):
+        # Deleting a non-existing vertex raises an exception.
     	self.assertRaises(KeyError, self.g.deleteVertex, 'X')
 
-        a = self.g.addVertex(Vertex('u1', 'A'))
-        b = self.g.addVertex(Vertex('u2', 'B'))
-        self.g.addEdge('u1', 'u2')
+        # Build a graph and then remove 'A'.
+        # Build A->B
+        self.g.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
+        # Build B->A. This allows us to test that A is removed from the edges
+        # leading out of B.
         self.g.addEdge('u2', 'u1')
+        # Build B->C, otherwise B gets removed from _edges when then the last
+        # edge from B is removed.
         self.g.addEdge('u2', Vertex('u3', 'C'))
+
         self.g.deleteVertex('u1')
-        self.assertEquals(len(self.g.vertices), 2)
-        self.assertEquals(len(self.g._edges), 1)
+
+        self.assertTrue('u1' not in self.g.vertices)
+        self.assertTrue('u1' not in self.g._edges)
+        self.assertTrue('u1' not in self.g._edges['u2'])
+        self.assertTrue('u1' not in self.g.neighbors)
+        self.assertTrue('u1' not in self.g.neighbors['u2'])
+
+# TODO: LEFT OFF HERE
 
     def testEdgeExistsBewtweenLabels(self):
          # Add a vertex "A".
