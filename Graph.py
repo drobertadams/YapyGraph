@@ -10,7 +10,22 @@ logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 class Graph(object):
     """
     Represents a directional graph of Vertex objects. The graph can search for
-    matching subgraphs.
+    matching subgraphs. Vertex degree is maintained as the sum of indegree and
+    outdegree.
+
+    X Graph()
+    X Graph.addVertex( Vertex('v1', 'A') )
+    X Graph.addEdge( Vertex('v2', 'B'), Vertex('v3', 'C') )
+         or Graph.addEdge( 'v1', Vertex('v4', 'D') )
+    X Graph.deleteEdge('v1', 'v2')
+    X Graph.deleteVertex('v4')
+    X Graph.edges
+    X Graph.labels
+    X Graph.numVertices
+    X Graph.findVertexWithLabel('A')
+    X Graph.hasEdgeBetweenVertices('v1', 'v2') 
+    X Graph.hasEdgeBetweenLabels('A', 'B') 
+    Graph.search(subGraph) # search for subGraph in self
     """
 
     #--------------------------------------------------------------------------
@@ -40,30 +55,23 @@ class Graph(object):
     def addEdge(self, n, m):
         """
         Adds a directional edge from Vertex n to Vertex m. If 
-        neither vertex exist in the graph, they are added.
+        neither vertex exist in the graph, they are added. 
         Inputs: n, m - endpoints of the edge; can be either new Vertex 
             objects or the id of existing vertices.
         Outputs: none
         """
 
-        if isinstance(n, str):
+        if isinstance(n, str): # n is vid
             n = self.vertices[n]
-        else:
+        else: # n is Vertex
             self.addVertex(n)
 
-        if isinstance(m, str):
+        if isinstance(m, str): # m is vid
             m = self.vertices[m]
-        else:
+        else: # m is Vertex
             self.addVertex(m)
 
-        if n.id not in self._edges:
-            self._edges[n.id] = []
-            self.neighbors[n.id] = []
-        if m.id not in self.neighbors:
-            self.neighbors[m.id] = []
-
         self._edges[n.id].append(m)
-
         self.neighbors[n.id].append(m)
         self.neighbors[m.id].append(n)
 
@@ -73,36 +81,40 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def addVertex(self, vertex):
         """
-        Adds a new vertex to the graph.
+        Adds a new vertex to the graph. If a vertex with the same id
+        already exists, the new vertex is not added. Instead, a reference
+        to the existing vertex is returned.
         Inputs: vertex - Vertex object to add
-        Outputs: The Vertex that was just created
-        Raises: TypeError if a non-Vertex is passed.
+        Outputs: The Vertex that was just added, or the existing Vertex if
+        one already exists with the same id.
         """
-        if not isinstance(vertex, Vertex):
-            raise TypeError('addVertex requires a Vertex object')
-
         if vertex.id not in self.vertices:
             self.vertices[vertex.id] = vertex
+            self._edges[vertex.id] = []
+            self.neighbors[vertex.id] = []
         else:
-            raise IndexError("Vertex %s already exists in the graph" % vertex.id)
+            vertex = self.vertices[vertex.id]
 
         return vertex
 
     #--------------------------------------------------------------------------
     def deleteEdge(self, startVID, endVID):
         """
-        Removes the edge from between the given Vertices. Does nothing if 
-        the edge doesn't exist.
+        Removes the edge from between the given Vertices. 
         Inputs: startVID, endVID - vertex IDs
-        Outputs: False if the edge doesn't exist
+        Outputs: False if the edge doesn't exist, True otherwise
         """
 
-        if startVID not in self._edges:
-            # startVID has no edges from it
+        if startVID not in self.vertices or \
+            endVID not in self.vertices:
             return False
 
         startVertex = self.vertices[startVID]
         endVertex = self.vertices[endVID]
+
+        if endVertex not in self._edges[startVID]:
+            # startVID does not point to endVID.
+            return False
 
         self._edges[startVID].remove(endVertex)
 
@@ -112,12 +124,7 @@ class Graph(object):
         startVertex.degree = startVertex.degree - 1
         endVertex.degree = endVertex.degree - 1
 
-        if len(self._edges[startVID]) == 0:
-            self._edges.pop(startVID)
-            self.neighbors.pop(startVID)
-
-        if len(self.neighbors[endVID]) == 0:
-            self.neighbors.pop(endVID)
+        return True
 
     #--------------------------------------------------------------------------
     def deleteVertex(self, vid):
@@ -125,95 +132,80 @@ class Graph(object):
         Deletes the vertex with the given vid along with all edges to and 
         from it.
         Inputs: vertex ID (string) 
-        Outputs: nothing
-        Raises: KeyError if vid is not a valid vertex id
+        Outputs: Vertex that was deleted, or None
         """
         if vid not in self.vertices:
-            raise KeyError('vertex id %s does not appear in this graph' % vid)
+            return None
 
-        self.vertices.pop(vid, None)
+        # Remove any edges leading out of vid.
+        for endVertex in self._edges[vid]:
+            self.deleteEdge(vid, endVertex.id)
 
-        # Remove vid as the start of any edge.
-        if vid in self._edges:
-            self._edges.pop(vid)
+        # Remove any edges leading to vid.
+        for startVID in self.vertices:
+            self.deleteEdge(startVID, vid)
 
-        # Remove vid as the end of any edge.
-        for vectorID,edgeList in self._edges.items():
-            edgeList[:] = (vertex for vertex in edgeList if vertex.id != vid)
-            if len(edgeList) == 0:
-                self._edges.pop(vectorID)
-
-        # Remove vid from list of neighbors.
-        self.neighbors.pop(vid, None)
-
-        # Remove vid as any neighbor.
-        for vectorID,neighborList in self.neighbors.items():
-            neighborList[:] = (vertex for vertex in neighborList if vertex.id != vid)
-            if len(neighborList) == 0:
-                self.neighbors.pop(vectorID)
-
+        # Delete the vertex itself.
+        return self.vertices.pop(vid)
 
     #--------------------------------------------------------------------------
     @property
     def edges(self):
-            """
-            Iterator that returns all (Vertex,Vertex) tuples from this graph.
-            """
-            for startVID in self._edges:
-                    for endVertex in self._edges[startVID]:
-                            startVertex = self.vertices[startVID]
-                            yield ( startVertex, endVertex )
-    
-    #--------------------------------------------------------------------------
-    def edgeExistsBetweenLabels(self, startLabel, endLabel):
-            """
-            Returns whether or not an edge exists from a vertex with label 
-            startLabel to a vertex with label endLabel.
-            Inputs:
-                    * startLabel - starting vertex label
-                    * endLabel - ending vertex label
-            Outputs: True if edge exists, False otherwise
-            """
-            for edge in self.edges:
-                    if edge[0].label == startLabel and edge[1].label == endLabel:
-                            return True
-            return False
+        """
+        Iterator that returns all (Vertex,Vertex) tuples from this graph.
+        """
+        for startVID in self._edges:
+            for endVertex in self._edges[startVID]:
+                startVertex = self.vertices[startVID]
+                yield ( startVertex, endVertex )
 
     #--------------------------------------------------------------------------
     def findVertexWithLabel(self, label):
-            """
-            Returns the Vertex in this graph that has the given label.
-            Inputs: label(string) to find
-            Outputs: Reference to the Vertex or None
-            """
-
-            for id,vertex in self.vertices.items():
-                    if vertex.label == label:
-                            return vertex
-            return None
+        """
+        Returns the first Vertex in this graph that has the given label.
+        Inputs: string label
+        Outputs: Vertex or None
+        """
+        for id,vertex in self.vertices.items():
+            if vertex.label == label:
+                return vertex
+        return None
 
     #--------------------------------------------------------------------------
-    def hasEdgeBetween(self, startVID, endVID):
+    def hasEdgeBetweenLabels(self, startLabel, endLabel):
+        """
+        Returns whether or not an edge exists from a vertex with label 
+        startLabel to a vertex with label endLabel.
+        Inputs: startLabel, endLabel - string vertex labels
+        Outputs: True if edge exists, False otherwise
+        """
+        startVertex = self.findVertexWithLabel(startLabel)
+        endVertex = self.findVertexWithLabel(endLabel)
+        if startVertex is None or endVertex is None:
+            return False
+        return self.hasEdgeBetweenVertices(startVertex.id, endVertex.id)
+
+    #--------------------------------------------------------------------------
+    def hasEdgeBetweenVertices(self, startVID, endVID):
         """
         Checks to see if an edge exists between the given start and end vid.
-        Inputs: startVID, endVID - vertex id's
-        Outputs: Boolean
+        Inputs: startVID, endVID - vertex ids
+        Outputs: True if an edge exists, False otherwise
         """
-        if startVID in self._edges:
-            for neighbor in self._edges[startVID]:
-                if neighbor.id == endVID:
-                    return True
-
-        return False
+        if startVID not in self.vertices or endVID not in self.vertices:
+            return False
+        endVertex = self.vertices[endVID]
+        return endVertex in self._edges[startVID]
 
     #--------------------------------------------------------------------------
     @property
     def labels(self):
-            """
-            Returns a list of all the labels in this graph (there may be duplicates).
-            Outputs: list of label strings
-            """
-            return [ v.label for id,v in self.vertices.items() ]
+        """
+        Returns a list of all the labels in this graph (there may be 
+        duplicates).
+        Outputs: list of label strings
+        """
+        return [ v.label for id,v in self.vertices.items() ]
     
     #--------------------------------------------------------------------------
     @property
@@ -252,33 +244,36 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def _filterCandidates(self, u):
-            # Returns an array of vertices from self that have the same
-            # label as u. The array is empty if no vertices match.
-            # Input: Query vertex u.
-            # Output: Array of vertices from self.
-            candidates = []
-            for id,vertex in self.vertices.items():
-                    if vertex.label == u.label:
-                            candidates.append(vertex)
-            return candidates
+        """
+        Returns a list of data(self) Vertices that have the same label as query
+        Vertex u. 
+        Input: Query Vertex u.
+        Output: list of Vertices from self.
+        """
+        candidates = []
+        for id,vertex in self.vertices.items():
+                if vertex.label == u.label:
+                        candidates.append(vertex)
+        return candidates
 
     #--------------------------------------------------------------------------
     def _findCandidates(self, q):
-            # For each query vertex, create a list of possible data vertices. If there
-            # are none, then return False
-            # Input: query graph q
-            # Output: False if at least one query vertex doesn't have a match, True
-            # otherwise.
+        """
+        For each query vertex, create a list of possible data vertices.
+        Candidate vertices are stored in each vertex in a `candidates`
+        item.
+        Input: query graph q
+        Output: False if at least one query vertex doesn't have a match, True
+        otherwise.
+        """
+        if q.numVertices == 0:
+            return False
 
-            # If the query graph is empty, there are no candidates.
-            if len(q.vertices) == 0:
-                    return False
-
-            for id,u in q.vertices.items():
-                    u.candidates = self._filterCandidates(u)
-                    if len(u.candidates) == 0:
-                            return False
-            return True
+        for id,u in q.vertices.items():
+           u.candidates = self._filterCandidates(u)
+           if len(u.candidates) == 0:
+              return False
+        return True
 
     #--------------------------------------------------------------------------
     def _findMatchedNeighbors(self, u, matches):
