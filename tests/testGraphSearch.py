@@ -7,14 +7,14 @@ class TestGraphSearch(unittest.TestCase):
     """
     X _filterCandidates
     X _findCandidates
-    search
-    _findMatchedNeighbors
-    _isJoinable
-    _nextUnmatchedVertex
+    X _nextUnmatchedVertex
     _refineCandidates
+    _isJoinable
+    _updateState
     _restoreState
     _subgraphSearch
-    _updateState
+    search
+    _findMatchedNeighbors
     """
 
     def testFilterCandidates(self):
@@ -63,6 +63,32 @@ class TestGraphSearch(unittest.TestCase):
         # Add a vertex for C, and now the test should succeeed.
         g.addEdge('u1', Vertex('u3', 'C'))
         self.assertTrue(g._findCandidates(q))
+
+    def testNextUnmamtchedVertex(self):
+        matches = {}
+
+        # Build a little graph with three nodes.
+        q = Graph()
+        q.addEdge(Vertex('u1'), Vertex('u2'))
+        q.addEdge('u1', Vertex('u3'))
+
+        # Call _nextUnmatchedVertex three times. Each time it returns a
+        # vertex, add it to matches.
+        for i in range(3):
+            v = q._nextUnmatchedVertex(matches)
+            self.assertTrue(v.id in ['u1', 'u2', 'u3'])
+            matches[v.id] = 'XYZ'
+
+        # Now that all of the vertices are labeled, _nextUnmatchedVertex() 
+        # should return None.
+        self.assertIsNone(q._nextUnmatchedVertex(matches))
+
+
+
+
+
+
+
 
     def XtestSearchEmptyQueryGraph(self):
             # Using an empty query graph should result in no solution.
@@ -197,25 +223,6 @@ class TestGraphSearch(unittest.TestCase):
             u = q.vertices['u2']
             v = g.vertices['v2']
             self.assertTrue(g._isJoinable(u, v, q, matches))	    
-
-    def XtestNextQueryVertex(self):
-            matches = {}
-
-            # Build a little graph with three nodes.
-            q = Graph()
-            q.addEdge(Vertex('u1'), Vertex('u2'))
-            q.addEdge('u1', Vertex('u3'))
-
-            # NextQueryVertex() should return either u1, u2, or u3.
-            for i in range(3):
-                v = q._nextUnmatchedVertex(matches)
-                self.assertTrue(v.id in ['u1', 'u2', 'u3'])
-                matches[v.id] = 'label'
-
-            # Now that all of the vertices are labeled, NextQueryVertex() should
-            # return None.
-            v = q._nextUnmatchedVertex(matches)
-            self.assertEquals(v, None)
 
     def XtestRefineCandidates(self):
             g = Graph()
