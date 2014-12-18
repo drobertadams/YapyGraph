@@ -34,7 +34,7 @@ class Graph(object):
         Builds an empty graph.
         """
         # A dictionary (key is vertex id) of Vertex objects.
-        self.vertices = {}
+        self._vertices = {}
 
         # A dictionary (key is vertex id) of a list of edges to Vertex objects.
         self._edges = {}
@@ -42,7 +42,7 @@ class Graph(object):
         # A dictionary (key is vertex id) of a list of neighbor Vertex objects.
         # This is different than _edges in that neighbors stores all adjancent
         # vertices, regardless of edge direction.
-        self.neighbors = {}
+        self._neighbors = {}
 
         # A list of solutions as used by the seach() method. Since that method
         # is recursive, we need a single spot to store all the solutions found.
@@ -60,20 +60,19 @@ class Graph(object):
             objects or the id of existing vertices.
         Outputs: none
         """
-
         if isinstance(n, str): # n is vid
-            n = self.vertices[n]
+            n = self._vertices[n]
         else: # n is Vertex
             self.addVertex(n)
 
         if isinstance(m, str): # m is vid
-            m = self.vertices[m]
+            m = self._vertices[m]
         else: # m is Vertex
             self.addVertex(m)
 
         self._edges[n.id].append(m)
-        self.neighbors[n.id].append(m)
-        self.neighbors[m.id].append(n)
+        self._neighbors[n.id].append(m)
+        self._neighbors[m.id].append(n)
 
         n.degree = n.degree + 1
         m.degree = m.degree + 1
@@ -88,12 +87,12 @@ class Graph(object):
         Outputs: The Vertex that was just added, or the existing Vertex if
         one already exists with the same id.
         """
-        if vertex.id not in self.vertices:
-            self.vertices[vertex.id] = vertex
+        if vertex.id not in self._vertices:
+            self._vertices[vertex.id] = vertex
             self._edges[vertex.id] = []
-            self.neighbors[vertex.id] = []
+            self._neighbors[vertex.id] = []
         else:
-            vertex = self.vertices[vertex.id]
+            vertex = self._vertices[vertex.id]
 
         return vertex
 
@@ -104,13 +103,12 @@ class Graph(object):
         Inputs: startVID, endVID - vertex IDs
         Outputs: False if the edge doesn't exist, True otherwise
         """
-
-        if startVID not in self.vertices or \
-            endVID not in self.vertices:
+        if startVID not in self._vertices or \
+            endVID not in self._vertices:
             return False
 
-        startVertex = self.vertices[startVID]
-        endVertex = self.vertices[endVID]
+        startVertex = self._vertices[startVID]
+        endVertex = self._vertices[endVID]
 
         if endVertex not in self._edges[startVID]:
             # startVID does not point to endVID.
@@ -118,8 +116,8 @@ class Graph(object):
 
         self._edges[startVID].remove(endVertex)
 
-        self.neighbors[startVID].remove(endVertex)
-        self.neighbors[endVID].remove(startVertex)
+        self._neighbors[startVID].remove(endVertex)
+        self._neighbors[endVID].remove(startVertex)
 
         startVertex.degree = startVertex.degree - 1
         endVertex.degree = endVertex.degree - 1
@@ -134,7 +132,7 @@ class Graph(object):
         Inputs: vertex ID (string) 
         Outputs: Vertex that was deleted, or None
         """
-        if vid not in self.vertices:
+        if vid not in self._vertices:
             return None
 
         # Remove any edges leading out of vid.
@@ -142,11 +140,11 @@ class Graph(object):
             self.deleteEdge(vid, endVertex.id)
 
         # Remove any edges leading to vid.
-        for startVID in self.vertices:
+        for startVID in self._vertices:
             self.deleteEdge(startVID, vid)
 
         # Delete the vertex itself.
-        return self.vertices.pop(vid)
+        return self._vertices.pop(vid)
 
     #--------------------------------------------------------------------------
     @property
@@ -156,7 +154,7 @@ class Graph(object):
         """
         for startVID in self._edges:
             for endVertex in self._edges[startVID]:
-                startVertex = self.vertices[startVID]
+                startVertex = self._vertices[startVID]
                 yield ( startVertex, endVertex )
 
     #--------------------------------------------------------------------------
@@ -166,7 +164,7 @@ class Graph(object):
         Inputs: string label
         Outputs: Vertex or None
         """
-        for id,vertex in self.vertices.items():
+        for vertex in self.vertices:
             if vertex.label == label:
                 return vertex
         return None
@@ -192,9 +190,9 @@ class Graph(object):
         Inputs: startVID, endVID - vertex ids
         Outputs: True if an edge exists, False otherwise
         """
-        if startVID not in self.vertices or endVID not in self.vertices:
+        if startVID not in self._vertices or endVID not in self._vertices:
             return False
-        endVertex = self.vertices[endVID]
+        endVertex = self._vertices[endVID]
         return endVertex in self._edges[startVID]
 
     #--------------------------------------------------------------------------
@@ -205,13 +203,24 @@ class Graph(object):
         duplicates).
         Outputs: list of label strings
         """
-        return [ v.label for id,v in self.vertices.items() ]
+        return [ v.label for v in self.vertices ]
     
     #--------------------------------------------------------------------------
     @property
     def numVertices(self):
+        """
+        Returns the number of vertices in this graph.
+        """
         return len(self.vertices)
 
+    #--------------------------------------------------------------------------
+    @property
+    def vertices(self):
+        """
+        Returns a list of Vertex objects in this graph.
+        """
+        return self._vertices.values()
+    
     #--------------------------------------------------------------------------
     def search(self, q):
             """
@@ -251,9 +260,9 @@ class Graph(object):
         Output: list of Vertices from self.
         """
         candidates = []
-        for id,vertex in self.vertices.items():
-                if vertex.label == u.label:
-                        candidates.append(vertex)
+        for vertex in self.vertices:
+            if vertex.label == u.label:
+                candidates.append(vertex)
         return candidates
 
     #--------------------------------------------------------------------------
@@ -266,10 +275,10 @@ class Graph(object):
         Output: False if at least one query vertex doesn't have a match, True
         otherwise.
         """
-        if q.numVertices == 0:
+        if self.numVertices == 0 or q.numVertices == 0:
             return False
 
-        for id,u in q.vertices.items():
+        for u in q.vertices:
            u.candidates = self._filterCandidates(u)
            if len(u.candidates) == 0:
               return False
@@ -285,8 +294,8 @@ class Graph(object):
                     return []
 
             neighbors = []
-            # logging.debug('%s has neighbors %s' % (u, str(self.neighbors[u.id])))
-            for neighborVertex in self.neighbors[u.id]:
+            # logging.debug('%s has neighbors %s' % (u, str(self._neighbors[u.id])))
+            for neighborVertex in self._neighbors[u.id]:
                     if neighborVertex.id in matches:
                             neighbors.append(neighborVertex)
             return neighbors
@@ -360,16 +369,16 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def __repr__(self):
-            if len(self.vertices) == 1:
-                    for vertexID,vertex in self.vertices.items():
-                            return str(vertex)
-            else:
-                    # With multiple vertices, print an adjacency list.
-                    s = ''
-                    for vertexID,neighbors in self._edges.items():
-                            for neighbor in neighbors:
-                                    s += '%s->%s, ' % (self.vertices[vertexID], neighbor)
-                    return s
+        if len(self._vertices) == 1:
+            for vertexID,vertex in self._vertices.items():
+                return str(vertex)
+        else:
+            # With multiple vertices, print an adjacency list.
+            s = ''
+            for vertexID,neighbors in self._edges.items():
+                for neighbor in neighbors:
+                    s += '%s->%s, ' % (self._vertices[vertexID], neighbor)
+            return s
 
     #--------------------------------------------------------------------------
     def _subgraphSearch(self, matches, q):

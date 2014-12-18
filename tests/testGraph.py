@@ -10,14 +10,14 @@ class TestGraphClass(unittest.TestCase):
 
     def testConstructor(self):
         # New graphs should be empty.
-        self.assertTrue(len(self.g.vertices) == 0)
+        self.assertTrue(len(self.g._vertices) == 0)
         self.assertTrue(len(self.g._edges) == 0)
-        self.assertTrue(len(self.g.neighbors) == 0)
+        self.assertTrue(len(self.g._neighbors) == 0)
  
     def testAddVertex(self):
         # Correct add.
         v = self.g.addVertex(Vertex('u1'))
-        self.assertTrue('u1' in self.g.vertices)
+        self.assertTrue('u1' in self.g._vertices)
 
         # Adding an existing vertex should return the existing vertex.
         self.assertEquals(self.g.addVertex(v), v)
@@ -30,16 +30,16 @@ class TestGraphClass(unittest.TestCase):
 
         # Add edge with one vid and one Vertex.
         self.g.addEdge('u1', Vertex('u3', 'C'))
-        c = self.g.vertices['u3']
+        c = self.g._vertices['u3']
 
         # Add edge with one Vertex and one vid.
         self.g.addEdge(Vertex('u4', 'D'), 'u1')
-        d = self.g.vertices['u4']
+        d = self.g._vertices['u4']
 
         # Add edge with two Vertics.
         self.g.addEdge(Vertex('u5', 'E'), Vertex('u6', 'F'))
-        e = self.g.vertices['u5']
-        f = self.g.vertices['u6']
+        e = self.g._vertices['u5']
+        f = self.g._vertices['u6']
 
         # Make sure A points to B and C.
         self.assertTrue(b in self.g._edges['u1'])
@@ -48,24 +48,24 @@ class TestGraphClass(unittest.TestCase):
         self.assertTrue(f in self.g._edges['u5'])
 
         # Make sure neighbors all reference each other.
-        self.assertTrue(b in self.g.neighbors['u1'])
-        self.assertTrue(c in self.g.neighbors['u1'])
-        self.assertTrue(d in self.g.neighbors['u1'])
+        self.assertTrue(b in self.g._neighbors['u1'])
+        self.assertTrue(c in self.g._neighbors['u1'])
+        self.assertTrue(d in self.g._neighbors['u1'])
 
-        self.assertTrue(a in self.g.neighbors['u2'])
-        self.assertTrue(a in self.g.neighbors['u3'])
-        self.assertTrue(a in self.g.neighbors['u4'])
+        self.assertTrue(a in self.g._neighbors['u2'])
+        self.assertTrue(a in self.g._neighbors['u3'])
+        self.assertTrue(a in self.g._neighbors['u4'])
 
-        self.assertTrue(e in self.g.neighbors['u6'])
-        self.assertTrue(f in self.g.neighbors['u5'])
+        self.assertTrue(e in self.g._neighbors['u6'])
+        self.assertTrue(f in self.g._neighbors['u5'])
 
         # Make sure the vertex degrees were updated.
-        self.assertEquals(self.g.vertices['u1'].degree, 3)
-        self.assertEquals(self.g.vertices['u2'].degree, 1)
-        self.assertEquals(self.g.vertices['u3'].degree, 1)
-        self.assertEquals(self.g.vertices['u4'].degree, 1)
-        self.assertEquals(self.g.vertices['u5'].degree, 1)
-        self.assertEquals(self.g.vertices['u6'].degree, 1)
+        self.assertEquals(self.g._vertices['u1'].degree, 3)
+        self.assertEquals(self.g._vertices['u2'].degree, 1)
+        self.assertEquals(self.g._vertices['u3'].degree, 1)
+        self.assertEquals(self.g._vertices['u4'].degree, 1)
+        self.assertEquals(self.g._vertices['u5'].degree, 1)
+        self.assertEquals(self.g._vertices['u6'].degree, 1)
 
     def testDeleteEdge(self):
         # Referencing non-existing vertices should return False
@@ -73,8 +73,8 @@ class TestGraphClass(unittest.TestCase):
 
         # Build A->B
         self.g.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-        u1 = self.g.vertices['u1']
-        u2 = self.g.vertices['u2']
+        u1 = self.g._vertices['u1']
+        u2 = self.g._vertices['u2']
 
         # Deleting a non-existant edge should return False.
         self.assertFalse(self.g.deleteEdge('u1', 'bbb'))
@@ -86,7 +86,7 @@ class TestGraphClass(unittest.TestCase):
         self.assertTrue(u2 not in self.g._edges['u1'])
 
         # u2 should not appear in the list of neighbors of u1.
-        self.assertTrue(u2 not in self.g.neighbors['u1'])
+        self.assertTrue(u2 not in self.g._neighbors['u1'])
 
         # Both vertex degress should be decremented.
         self.assertEquals(u1.degree, 0)
@@ -99,19 +99,19 @@ class TestGraphClass(unittest.TestCase):
         # Build A->B, B->A
         self.g.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
         self.g.addEdge('u2', 'u1')
-        u1 = self.g.vertices['u1']
-        u2 = self.g.vertices['u2']
+        u1 = self.g._vertices['u1']
+        u2 = self.g._vertices['u2']
 
         self.g.deleteVertex('u1')
 
         # u1 shouldn't appear anywhere as an edge or neighbor.
         self.assertTrue('u2' not in self.g._edges['u1'])
-        self.assertTrue('u2' not in self.g.neighbors['u1'])
+        self.assertTrue('u2' not in self.g._neighbors['u1'])
         self.assertTrue('u1' not in self.g._edges['u2'])
-        self.assertTrue('u1' not in self.g.neighbors['u2'])
+        self.assertTrue('u1' not in self.g._neighbors['u2'])
 
         # u1 isn't a vertex anymore.
-        self.assertTrue('u1' not in self.g.vertices)
+        self.assertTrue('u1' not in self.g._vertices)
 
     def testEdgesProperty(self):
         # Build A->B, B->C
