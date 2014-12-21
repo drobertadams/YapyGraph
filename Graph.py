@@ -332,16 +332,20 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def _refineCandidates(self, candidates, u, matches):
-            # Given a query vertex u, removes candidate vertices from the original
-            # candidate list (candidates) created by _filterCandidates() that are no longer 
-            # obvious matches because they have a degree smaller than u. It also
-            # removes vertices that have already been matched.
-            # Input: list of candidate graph vertices candidates, a query vertex
-            # u, and the mapping of already mapped vertices.
-            # Output: the revised list of candidate vertices.
-            candidates = [v for v in candidates if (v.degree >= u.degree) and 
-                    (v.id not in matches)]
-            return candidates
+        """
+        Given a query vertex u, removes candidate data vertices from the
+        original candidate list (candidates) created by _filterCandidates()
+        that are no longer obvious matches because they have a degree smaller
+        than u. It also removes vertices that have already been matched.
+        Input: 
+            * candidates - list of candidate data Vertices
+            * u - query vertex for which candidates is a list
+            * matches - data/query vertices that already matched
+        Output: the revised list of candidate vertices.
+        """
+        candidates = [v for v in candidates if (v.degree >= u.degree) and 
+                (v.id not in matches)]
+        return candidates
 
     #--------------------------------------------------------------------------
     def _restoreState(self, matches):

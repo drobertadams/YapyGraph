@@ -8,13 +8,13 @@ class TestGraphSearch(unittest.TestCase):
     X _filterCandidates
     X _findCandidates
     X _nextUnmatchedVertex
-    _refineCandidates
+    X _refineCandidates
     _isJoinable
+    _findMatchedNeighbors
     _updateState
     _restoreState
     _subgraphSearch
     search
-    _findMatchedNeighbors
     """
 
     def testFilterCandidates(self):
@@ -83,11 +83,43 @@ class TestGraphSearch(unittest.TestCase):
         # should return None.
         self.assertIsNone(q._nextUnmatchedVertex(matches))
 
+    def testRefineCandidates(self):
+        # An empty candidate list should return an empty list.
+        g = Graph()
+        c = g._refineCandidates([], None, {})
+        self.assertEquals(len(c), 0)
 
+        # Build a graph and some vertices for use later.
+        u = Vertex('u1') # query vertex
+        v = Vertex('v1') # data vertex
 
+        # Test with unmatched candidate with the v.degree >= u.degree.
+        u.degree = 1
+        v.degree = 1
+        c = [ v ]
+        c = g._refineCandidates(c, u, {})
+        self.assertEqual(len(c), 1)
+        self.assertEqual(c[0].id, 'v1')
 
+        # Test with matched candidate with v.degree >= u.degree.
+        u.degree = 1
+        v.degree = 1
+        m = { 'v1', 'u1' }
+        c = g._refineCandidates(c, u, m)
+        self.assertEqual(len(c), 0)
 
+        # Test with unmatched candidate with v.degree < u.degree.
+        u.degree = 1
+        v.degree = 0
+        c = g._refineCandidates(c, u, {})
+        self.assertEqual(len(c), 0)
 
+        # Test with matched candidate with v.degree < u.degree.
+        u.degree = 1
+        v.degree = 0
+        m = { 'v1', 'u1' }
+        c = g._refineCandidates(c, u, m)
+        self.assertEqual(len(c), 0)
 
 
     def XtestSearchEmptyQueryGraph(self):
@@ -223,42 +255,6 @@ class TestGraphSearch(unittest.TestCase):
             u = q.vertices['u2']
             v = g.vertices['v2']
             self.assertTrue(g._isJoinable(u, v, q, matches))	    
-
-    def XtestRefineCandidates(self):
-            g = Graph()
-            # An empty candidate list should return an empty list.
-            c = g._refineCandidates([], None, {})
-            self.assertEquals(len(c), 0)
-
-            # Test with no matching candidates.
-            # Candidates have 0 degree, query vertex has degree > 0.
-            c = [ Vertex('u1'), Vertex('u2'), Vertex('u3') ]
-            v = Vertex('test')
-            v.degree = 2
-            c = g._refineCandidates(c, v, {})
-            self.assertEquals(len(c), 0)
-
-            # Test where one candidate is removed (u2).
-            u1 = Vertex('u1')
-            u1.degree = 1
-            u2 = Vertex('u2')
-            u2.degree = 0
-            c = [u1, u2]
-            v = Vertex('v')
-            v.degree = 1
-            c = g._refineCandidates(c, v, {})
-            self.assertEquals(len(c), 1)
-
-            # Test that already matching candidate is removed (u2).
-            u1 = Vertex('u1')
-            u1.degree = 1
-            u2 = Vertex('u2')
-            u2.degree = 1
-            c = [u1, u2]
-            v = Vertex('v')
-            v.degree = 1
-            c = g._refineCandidates(c, v, {'u2':'v1'})
-            self.assertEquals(len(c), 1)
 
     def XtestRestoreState(self):
             g = Graph()
