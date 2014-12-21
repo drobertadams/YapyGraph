@@ -9,7 +9,7 @@ class TestGraphSearch(unittest.TestCase):
     X _findCandidates
     X _nextUnmatchedVertex
     X _refineCandidates
-    _findMatchedNeighbors
+    X _findMatchedNeighbors
     _isJoinable
     _updateState
     _restoreState
@@ -63,6 +63,24 @@ class TestGraphSearch(unittest.TestCase):
         # Add a vertex for C, and now the test should succeeed.
         g.addEdge('u1', Vertex('u3', 'C'))
         self.assertTrue(g._findCandidates(q))
+        
+    def testFindMatchedNeighbors(self): 
+        q = Graph()
+        # No data should return an empty list.
+        mn = q._findMatchedNeighbors(None, None)
+        self.assertEquals(len(mn), 0)
+
+        # No matching neighbors should return an empty list.
+        q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
+        u2 = q._vertices['u2']
+        mn = q._findMatchedNeighbors(u2, [])
+        self.assertEquals(len(mn), 0)
+
+        # Make a matching neighbor and make sure it is returned.
+        matches = { 'u1':'v1', 'v1':'u1' }
+        mn = q._findMatchedNeighbors(u2, matches)
+        self.assertEquals(len(mn), 1)
+        self.assertEquals(mn[0].id, 'u1')
 
     def testNextUnmamtchedVertex(self):
         matches = {}
@@ -120,6 +138,8 @@ class TestGraphSearch(unittest.TestCase):
         m = { 'v1', 'u1' }
         c = g._refineCandidates(c, u, m)
         self.assertEqual(len(c), 0)
+
+
 
 
     def XtestSearchEmptyQueryGraph(self):
@@ -201,24 +221,7 @@ class TestGraphSearch(unittest.TestCase):
 
             self.assertEquals(len(solutions), 3)
 
-    def XtestFindMatchedNeighbors(self): 
-            q = Graph()
-            # No data should return an empty list.
-            n = q._findMatchedNeighbors(None, None)
-            self.assertEquals(len(n), 0)
 
-            # No matching neighbors should return an empty list.
-            q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-            q.addEdge('u1', Vertex('u3', 'C'))
-            u = q.vertices['u2']
-            n = q._findMatchedNeighbors(u, [])
-            self.assertEquals(len(n), 0)
-
-            # Make a matching neighbor and make sure it is returned.
-            matches = { 'u2':'v1', 'v1':'u2' }
-            u = q.vertices['u1']
-            n = q._findMatchedNeighbors(u, matches)
-            self.assertEquals(len(n), 1)
 
     def XtestIsJoinable(self):
             # If u or v is None, then IsJoinable() should return False.

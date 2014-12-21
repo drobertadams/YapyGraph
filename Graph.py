@@ -249,10 +249,12 @@ class Graph(object):
         """
         For each query vertex, create a list of possible data vertices.
         Candidate vertices are stored in each vertex in a `candidates`
-        item.
+        item. This should be called on the data graph.
         Input: query graph q
         Output: True if all query vertices have at least one candidate, 
         False otherwise.
+        Side Effects: query vertices may have their candidates property
+        updated.
         """
         if self.numVertices == 0 or q.numVertices == 0:
             return False
@@ -265,19 +267,19 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def _findMatchedNeighbors(self, u, matches):
-            # Find the matched vertices adjacent to query vertex u. This method
-            # should be called on the query graph.
-            # Input: Vertex u, dict of matches
-            # Output: List of neighbors of u that appear in matches.
-            if u is None or matches is None or len(matches) == 0:
-                    return []
+        """
+        Find the matched vertices adjacent to query vertex u. This method
+        should be called on the query graph. "neighbor" here is irregardless
+        of edge direction. Two vertices are considered neighbors if any
+        edge connects them.
+        Input: query Vertex u, dict of matches
+        Output: List of neighbors of u that appear in matches.
+        """
+        if u is None or matches is None or len(matches) == 0:
+            return []
 
-            neighbors = []
-            # logging.debug('%s has neighbors %s' % (u, str(self._neighbors[u.id])))
-            for neighborVertex in self._neighbors[u.id]:
-                    if neighborVertex.id in matches:
-                            neighbors.append(neighborVertex)
-            return neighbors
+        return [neighborVertex for neighborVertex in self._neighbors[u.id] \
+            if neighborVertex.id in matches]
 
     #--------------------------------------------------------------------------
     def _isJoinable(self, u, v, q, matches):		
@@ -317,7 +319,8 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def _nextUnmatchedVertex(self, matches):
         """
-        Returns a vertex whose vid does not appear in matches.
+        Returns a data vertex whose vid does not appear in matches. This should
+        be called on the data graph.
         Input: dictionary of matches
         Output: The next unmatched Vertex, or None.
         """
