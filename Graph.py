@@ -237,17 +237,13 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def _filterCandidates(self, u):
         """
-        Returns a list of data(self) Vertices that have the same label as query
-        Vertex u. 
+        Returns a list of data Vertices that have the same label as query
+        Vertex u. This method should be called on the data graph.
         Input: Query Vertex u.
         Output: list of Vertices from self.
         """
-        candidates = []
-        for vertex in self.vertices:
-            if vertex.label == u.label:
-                candidates.append(vertex)
-        return candidates
-
+        return [vertex for vertex in self.vertices if vertex.label == u.label]
+        
     #--------------------------------------------------------------------------
     def _findCandidates(self, q):
         """

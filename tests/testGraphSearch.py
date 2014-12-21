@@ -9,8 +9,8 @@ class TestGraphSearch(unittest.TestCase):
     X _findCandidates
     X _nextUnmatchedVertex
     X _refineCandidates
-    _isJoinable
     _findMatchedNeighbors
+    _isJoinable
     _updateState
     _restoreState
     _subgraphSearch
