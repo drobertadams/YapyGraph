@@ -10,7 +10,7 @@ class TestGraphSearch(unittest.TestCase):
     X _nextUnmatchedVertex
     X _refineCandidates
     X _findMatchedNeighbors
-    _isJoinable
+    X _isJoinable
     _updateState
     _restoreState
     _subgraphSearch
@@ -81,6 +81,65 @@ class TestGraphSearch(unittest.TestCase):
         mn = q._findMatchedNeighbors(u2, matches)
         self.assertEquals(len(mn), 1)
         self.assertEquals(mn[0].id, 'u1')
+
+    def testIsJoinable(self):
+        # If there are no matched vertices yet (we just started the matching
+        # process), then should return True.
+        g = Graph()
+        self.assertTrue(g._isJoinable(None, None, None, {}))
+
+        # If there are matches, but none adjacent to u, then should
+        # return False.
+        g = Graph()
+        g.addEdge(Vertex('v1'), Vertex('v2'))
+        v = g._vertices['v1']
+
+        q = Graph()
+        q.addEdge(Vertex('u1'), Vertex('u2'))
+        u = q._vertices['u1']
+        self.assertFalse(g._isJoinable(u, v, q, {'u3':'v3', 'v3':'u3'}))
+
+        # If an edge exists between u and n, but the other direction between 
+        # v and m, should return False
+        g = Graph()
+        g.addEdge(Vertex('v1'), Vertex('v2'))
+        v = g._vertices['v1']
+
+        q = Graph()
+        q.addEdge(Vertex('u2'), Vertex('u1'))
+        u = q._vertices['u1']
+        self.assertFalse(g._isJoinable(u, v, q, {'u2':'v2', 'v2':'u2'}))
+
+        # If an edge exists between n and u, but the other direction between 
+        # m and v, should return False
+        g = Graph()
+        g.addEdge(Vertex('v2'), Vertex('v1'))
+        v = g._vertices['v1']
+
+        q = Graph()
+        q.addEdge(Vertex('u1'), Vertex('u2'))
+        u = q._vertices['u1']
+        self.assertFalse(g._isJoinable(u, v, q, {'u2':'v2', 'v2':'u2'}))
+
+        # Correct case 1. Edge between u and n, and between v and m.
+        g = Graph()
+        g.addEdge(Vertex('v1'), Vertex('v2'))
+        v = g._vertices['v1']
+
+        q = Graph()
+        q.addEdge(Vertex('u1'), Vertex('u2'))
+        u = q._vertices['u1']
+        self.assertTrue(g._isJoinable(u, v, q, {'u2':'v2', 'v2':'u2'}))
+
+        # Correct case 2. Edge between n and u, and between m and v.
+        g = Graph()
+        g.addEdge(Vertex('v2'), Vertex('v1'))
+        v = g._vertices['v1']
+
+        q = Graph()
+        q.addEdge(Vertex('u2'), Vertex('u1'))
+        u = q._vertices['u1']
+        self.assertTrue(g._isJoinable(u, v, q, {'u2':'v2', 'v2':'u2'}))
 
     def testNextUnmamtchedVertex(self):
         matches = {}
@@ -222,42 +281,6 @@ class TestGraphSearch(unittest.TestCase):
             self.assertEquals(len(solutions), 3)
 
 
-
-    def XtestIsJoinable(self):
-            # If u or v is None, then IsJoinable() should return False.
-            g = Graph()
-            self.assertFalse(g._isJoinable(None, None, None, None))
-
-            # If there are no matched vertices yet (we just started the matching
-            # process), then IsJoinable() should return True.
-            g = Graph()
-            q = Graph()
-            u = Vertex('u1')
-            v = Vertex('v1')
-            self.assertTrue(g._isJoinable(u, v, q, []))
-
-            # Create a query and data graph for some tests.
-            q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-            q.addEdge('u1', Vertex('u3', 'C'))
-
-            g.addEdge(Vertex('v1', 'A'), Vertex('v2', 'B'))
-            g.addEdge('v1', Vertex('v3', 'C'))
-            g.addEdge('v3', 'v2')
-            g.addEdge('v3', Vertex('v4', 'B'))
-            g.addEdge('v3', Vertex('v5', 'C'))
-
-            # Match u1 with v1. Then check to see if u2 and v4 are joinable.
-            # They are not because there is no edge between v4 and v1 (draw out
-            # the graphs on paper and this will make sense).
-            matches = { 'u1':'v1', 'v1':'u1' }
-            u = q.vertices['u2']
-            v = g.vertices['v4']
-            self.assertFalse(g._isJoinable(u, v, q, matches))
-
-            # Test if u2 can be matched to v2. It can.
-            u = q.vertices['u2']
-            v = g.vertices['v2']
-            self.assertTrue(g._isJoinable(u, v, q, matches))	    
 
     def XtestRestoreState(self):
             g = Graph()

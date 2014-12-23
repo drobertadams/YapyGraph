@@ -283,38 +283,38 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def _isJoinable(self, u, v, q, matches):		
-            """
-            See if u and v are joinable this data graph. 
-            Iterates through all adjacent matched query vertices of u. 
-            If an adjacent query vertex, n, is already matched with a data 
-            vertex, w, then it checks whether there is a corresponding edge 
-            (v, w) in this data graph going in the same direction as the edge
-            between (u, n).
-            Inputs: 
-                    * query vertex u
-                    * data vertex v
-                    * query graph q, 
-                    * list of matched query/data vertices
-            Outputs: True if u and v can be matched, False otherwise
-            """
+        """
+        See if query Vertex u and data Vertex v are "joinable" (matchable
+        for a solution). Iterates through all matched query 
+        vertices adjacent to u. If some adjacent query vertex, n, is already 
+        matched with a data vertex, m, then it checks whether there is a 
+        corresponding edge between v and m in the data graph going in 
+        the same direction as the edge between u and n.
+        Inputs: 
+            * query Vertex u
+            * data Vertex v
+            * query Graph q, 
+            * list of previously matched query/data vertices
+        Outputs: True if u and v can be matched, False otherwise
+        """
 
-            if u is None or v is None or q is None:
-                    return False
+        # If nothing has been matched, then we can join u and v.
+        if len(matches) == 0:
+            return True
 
-            if len(matches) == 0:
-                    return True
+        neighbors = q._findMatchedNeighbors(u, matches)
+        for n in neighbors:
+            m = self._vertices[matches[n.id]]
+            if q.hasEdgeBetweenVertices(u.id, n.id) and \
+               self.hasEdgeBetweenVertices(v.id, m.id):
+                return True
+            elif q.hasEdgeBetweenVertices(n.id, u.id) and \
+               self.hasEdgeBetweenVertices(m.id, v.id):
+                return True
+            else:
+                return False
 
-            neighbors = q._findMatchedNeighbors(u, matches)
-            for n in neighbors:
-                    w = self.vertices[matches[n.id]]
-                    if u.id in q._edges and n in q._edges[u.id] and w in self._edges[v.id]:
-                            return True
-                    elif u in q._edges[n.id] and v in self._edges[w.id]:
-                            return True
-                    else:
-                            return False
-
-            return False
+        return False
 
     #--------------------------------------------------------------------------
     def _nextUnmatchedVertex(self, matches):
