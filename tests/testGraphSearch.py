@@ -11,7 +11,7 @@ class TestGraphSearch(unittest.TestCase):
     X _refineCandidates
     X _findMatchedNeighbors
     X _isJoinable
-    _updateState
+    X _updateState
     _restoreState
     _subgraphSearch
     search
@@ -198,7 +198,15 @@ class TestGraphSearch(unittest.TestCase):
         c = g._refineCandidates(c, u, m)
         self.assertEqual(len(c), 0)
 
-
+    def testUpdateState(self):
+        matches = {}
+        u = Vertex('u1')
+        v = Vertex('v1')
+        g = Graph()
+        g._updateState(u, v, matches)
+        self.assertEquals(len(g._matchHistory), 1)
+        self.assertEquals(len(matches), 1)
+        self.assertEquals(matches[u.id], 'v1')
 
 
     def XtestSearchEmptyQueryGraph(self):
@@ -302,13 +310,6 @@ class TestGraphSearch(unittest.TestCase):
             # Now we should have nothing left.
             self.assertEquals(len(matches), 0)
 
-    def XtestUpdateState(self):
-            matches = {}
-            u = Vertex('u1')
-            v = Vertex('v1')
-            g = Graph()
-            g._updateState(u, v, matches)
-            self.assertEquals(len(matches), 1)
-            self.assertEquals(matches[u.id], 'v1')
+
 
 

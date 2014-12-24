@@ -417,17 +417,18 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def _updateState(self, u, v, matches):
-            """
-            Stores the current mapping of Vertex u to Vertex v.
-            Each call to _updateState() stores the previous set of matches to
-            a stack of matches, so that _restoreState() can undo it.
-            Inputs: 
-                    * u - query Vertex
-                    * v - data Vertex
-                    * matches - dictionary of Vertex.id -> Vertex.id mappings 
-            Outputs: nothing
-            """
-
-            self.matchHistory.append(pickle.dumps(matches))
-            matches[u.id] = v.id
-            #matches[v.id] = u.id
+        """
+        Stores the current match of query Vertex u to data Vertex v as a
+        possible solution. Each call to _updateState() also stores the previous
+        set of matches to a stack of matches, so that _restoreState() can undo
+        it.
+        Inputs: 
+            * u - query Vertex
+            * v - data Vertex
+            * matches - current matches
+        Outputs: nothing
+        """
+        # Store the previous set of matches as a JSON string.
+        self._matchHistory.append(pickle.dumps(matches))
+        matches[u.id] = v.id
+        #matches[v.id] = u.id
