@@ -12,7 +12,7 @@ class TestGraphSearch(unittest.TestCase):
     X _findMatchedNeighbors
     X _isJoinable
     X _updateState
-    _restoreState
+    X _restoreState
     _subgraphSearch
     search
     """
@@ -198,6 +198,29 @@ class TestGraphSearch(unittest.TestCase):
         c = g._refineCandidates(c, u, m)
         self.assertEqual(len(c), 0)
 
+    def testRestoreState(self):
+        # Save state with a couple calls to updateState() and then see that 
+        # they are undone.
+        g = Graph()
+        matches = {}
+        u1 = Vertex('u1')
+        v1 = Vertex('v1')
+        g._updateState(u1, v1, matches) # u1 matched with v1
+        u2 = Vertex('u2')
+        v2 = Vertex('v2')
+        g._updateState(u2, v2, matches) # u2 matched with v2
+
+        # Now we should get the dictionary with only the original set of 
+        # matches.
+        matches = g._restoreState(matches)
+        self.assertEquals(len(matches), 1)
+        self.assertTrue('u1' in matches)
+        self.assertTrue(matches['u1'], 'v1')
+
+        # Now we should have an empty dictionary.
+        matches = g._restoreState(matches)
+        self.assertEquals(len(matches), 0)
+
     def testUpdateState(self):
         matches = {}
         u = Vertex('u1')
@@ -290,25 +313,6 @@ class TestGraphSearch(unittest.TestCase):
 
 
 
-    def XtestRestoreState(self):
-            g = Graph()
-
-            matches = {}
-            u1 = Vertex('u1')
-            v1 = Vertex('v1')
-            g._updateState(u1, v1, matches)
-            u2 = Vertex('u2')
-            v2 = Vertex('v2')
-            g._updateState(u2, v2, matches)
-            self.assertEquals(len(matches), 2)
-
-            matches = g._restoreState(matches)
-            # RestoreState should have removed the last two matches.
-            self.assertEquals(len(matches), 1)
-
-            matches = g._restoreState(matches)
-            # Now we should have nothing left.
-            self.assertEquals(len(matches), 0)
 
 
 

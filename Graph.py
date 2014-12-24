@@ -348,11 +348,13 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def _restoreState(self, matches):
-            # Input: dict matches.
-            # Output: Updated matches without the last set of matches.
-            # Undoes the last vertex mapping by removing the last mapping pair
-            # _(u, v)_ from _matches_.
-            return pickle.loads(self.matchHistory.pop())
+        """
+        Undoes the last vertex match by removing the last matching dict
+        from _matchHistory and returning it.
+        Input: dict of previous matches (stored as JSON strings)
+        Output: previous match dict.
+        """
+        return pickle.loads(self._matchHistory.pop())
 
     #--------------------------------------------------------------------------
     def __repr__(self):
