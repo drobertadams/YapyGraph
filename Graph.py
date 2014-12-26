@@ -319,8 +319,8 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def _nextUnmatchedVertex(self, matches):
         """
-        Returns a data vertex whose vid does not appear in matches. This should
-        be called on the data graph.
+        Returns a query vertex whose vid does not appear in matches. This 
+        should be called on the query graph.
         Input: dictionary of matches
         Output: The next unmatched Vertex, or None.
         """
@@ -388,34 +388,27 @@ class Graph(object):
         
         # Get the next query vertex that needs a match.
         u = q._nextUnmatchedVertex(matches)
-
-        # Test the degenerate case...there are no query vertices that need a match.
-        if u is None:
-            return
-
-        logging.debug('checking for a match with data vertex %s' % u)
+        logging.debug('query vertex %s needs a match' % u)
 
         # Refine the list of candidate vertices from that obviously aren't
         # good candidates.
         u.candidates = self._refineCandidates(u.candidates, u, matches)
 
         # Check each candidate for a possible match.
+        logging.debug('candidates are %s' % u.candidates)
         for v in u.candidates:
+            logging.debug('checking query vertex candidate %s' % v)
+            # Check to see u and v are joinable in g.
+            if self._isJoinable(u, v, q, matches):
+                logging.debug("oh yea, that's a match")
 
-                logging.debug('checking query vertex candidate %s' % v)
+                # Yes they are, so store the mapping and try the next vertex.
+                self._updateState(u, v, matches)
+                logging.debug('matches is now %s' % matches)
+                self._subgraphSearch(matches, q)
 
-                # Check to see _u_ and _v_ are joinable in _g_.
-                if self._isJoinable(u, v, q, matches):
-
-                        logging.debug("oh yea, that's a match")
-
-                        # Yes they are, so store the mapping and try the next vertex.
-                        self._updateState(u, v, matches)
-                        logging.debug('matches is now %s' % matches)
-                        self._subgraphSearch(matches, q)
-
-                        # Undo the last mapping.
-                        matches = self._restoreState(matches)
+                # Undo the last mapping.
+                matches = self._restoreState(matches)
 
     #--------------------------------------------------------------------------
     def _updateState(self, u, v, matches):

@@ -22,6 +22,7 @@ class Vertex(object):
         self.id = id
         self.label = label
         self.degree = 0
+        self.candidates = [] # used for subgraph searching
 
     def __repr__(self):
         return str(self)

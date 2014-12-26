@@ -13,7 +13,7 @@ class TestGraphSearch(unittest.TestCase):
     X _isJoinable
     X _updateState
     X _restoreState
-    _subgraphSearch
+    X _subgraphSearch
     search
     """
 
@@ -62,7 +62,9 @@ class TestGraphSearch(unittest.TestCase):
 
         # Add a vertex for C, and now the test should succeeed.
         g.addEdge('u1', Vertex('u3', 'C'))
+        u1 = q._vertices['u1']
         self.assertTrue(g._findCandidates(q))
+        self.assertEquals(len(u1.candidates), 1)
         
     def testFindMatchedNeighbors(self): 
         q = Graph()
@@ -221,6 +223,63 @@ class TestGraphSearch(unittest.TestCase):
         matches = g._restoreState(matches)
         self.assertEquals(len(matches), 0)
 
+    def testSubgraphSearchSolutionFound(self):
+        # Test that when the length of query=>data vertex matches is the 
+        # same as the number of query vertices, then the solution is stored.
+        g = Graph()
+        q = Graph()
+        q.addVertex(Vertex('u1', 'A')) # one query vertex
+        matches = {'u1':'v1'} # one match
+        g._subgraphSearch(matches, q)
+        self.assertEqual(len(g._solutions), 1)
+
+    def testSubgraphSearchSolutionNoCandidates(self):
+        # Test when an umatched query vertex doesn't have any candidates, we
+        # don't find any solutions.
+        g = Graph()
+        g.addVertex(Vertex('v1', 'A'))
+        q = Graph()
+        q.addVertex(Vertex('u1', 'B'))
+        matches = {}
+        self.assertEqual(len(g._solutions), 0)
+        g._subgraphSearch(matches, q)
+        self.assertEqual(len(g._solutions), 0)
+
+    def testSubgraphSearchOneCandidateNotJoinable(self):
+        # The query vertex has a candidate data vertex, but they aren't
+        # "joinable" -- no solution.
+        g = Graph()
+        g.addVertex(Vertex('v1', 'A'))
+        g.addVertex(Vertex('v2', 'B'))
+        v1 = g._vertices['v1']
+
+        q = Graph()
+        q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
+        q._vertices['u1'].candidates = [v1]
+
+        # u2 and v2 are already matched. There's an edge between u1 and
+        # u2, but no edge between v1 and v2 so u1 and v1 cannot be matched.
+        matches = {'u2':'v2'}
+        self.assertEqual(len(g._solutions), 0)
+        g._subgraphSearch(matches, q)
+        self.assertEqual(len(g._solutions), 0)
+
+    def testSubgraphSearchSimpleSolution(self):
+        # One simple solution.
+        g = Graph()
+        g.addVertex(Vertex('v1', 'A'))
+        v1 = g._vertices['v1']
+
+        q = Graph()
+        q.addVertex(Vertex('u1', 'A'))
+        q._vertices['u1'].candidates = [v1]
+
+        self.assertEqual(len(g._solutions), 0)
+        g._subgraphSearch({}, q)
+        self.assertEqual(len(g._solutions), 1)
+        self.assertIn('u1', g._solutions[0])
+        self.assertEquals(g._solutions[0]['u1'], 'v1')
+
     def testUpdateState(self):
         matches = {}
         u = Vertex('u1')
@@ -230,6 +289,13 @@ class TestGraphSearch(unittest.TestCase):
         self.assertEquals(len(g._matchHistory), 1)
         self.assertEquals(len(matches), 1)
         self.assertEquals(matches[u.id], 'v1')
+
+
+
+
+
+
+
 
 
     def XtestSearchEmptyQueryGraph(self):
