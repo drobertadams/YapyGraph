@@ -4,18 +4,6 @@ from PGC.Graph.Graph import Graph
 from PGC.Graph.Vertex import Vertex
 
 class TestGraphSearch(unittest.TestCase):
-    """
-    X _filterCandidates
-    X _findCandidates
-    X _nextUnmatchedVertex
-    X _refineCandidates
-    X _findMatchedNeighbors
-    X _isJoinable
-    X _updateState
-    X _restoreState
-    X _subgraphSearch
-    search
-    """
 
     def testFilterCandidates(self):
         # Filtering an empty graph should return an empty array.
@@ -223,6 +211,59 @@ class TestGraphSearch(unittest.TestCase):
         matches = g._restoreState(matches)
         self.assertEquals(len(matches), 0)
 
+    def testSearchNoCandidates(self):
+        # If there are no suitable candidate data vertices for every
+        # query vertex, then the returned solutions list should be empty.
+        g = Graph()
+        g.addEdge(Vertex('v1', 'A'), Vertex('v2', 'B'))
+        q = Graph()
+        q.addEdge(Vertex('u1', 'Z'), Vertex('u2', 'Y'))
+        solutions = g.search(q)
+        self.assertEquals(len(solutions), 0)
+
+    def testSearchOneSimpleSolution(self):
+        g = Graph()
+        g.addEdge(Vertex('v1', 'A'), Vertex('v2', 'B'))
+        g.addEdge('v1', Vertex('v3', 'C'))
+
+        # Query graph is exact replica.
+        q = Graph()
+        q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
+        q.addEdge('u1', Vertex('u3', 'C'))
+
+        solutions = g.search(q)
+
+        self.assertEquals(len(solutions), 1)
+        self.assertEquals(solutions[0]['u1'], 'v1')
+        self.assertEquals(solutions[0]['u2'], 'v2')
+        self.assertEquals(solutions[0]['u3'], 'v3')
+
+    def testSearchTwoSolutions(self):
+        # A1->B,C  A2->B,C
+        g = Graph()
+        g.addEdge(Vertex('v1', 'A'), Vertex('v2', 'B'))
+        g.addEdge('v1', Vertex('v3', 'C'))
+        g.addEdge(Vertex('v4', 'A'), 'v3')
+        g.addEdge('v4', 'v2')
+
+        q = Graph()
+        q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
+        q.addEdge('u1', Vertex('u3', 'C'))
+
+        solutions = g.search(q)
+
+        self.assertEquals(len(solutions), 2)
+
+        # First A->B,C is found.
+        self.assertEquals(solutions[0]['u1'], 'v1')
+        self.assertEquals(solutions[0]['u2'], 'v2')
+        self.assertEquals(solutions[0]['u3'], 'v3')
+
+        # Second A->B,C is found.
+        self.assertEquals(solutions[1]['u1'], 'v4')
+        self.assertEquals(solutions[1]['u2'], 'v2')
+        self.assertEquals(solutions[1]['u3'], 'v3')
+
     def testSubgraphSearchSolutionFound(self):
         # Test that when the length of query=>data vertex matches is the 
         # same as the number of query vertices, then the solution is stored.
@@ -289,97 +330,3 @@ class TestGraphSearch(unittest.TestCase):
         self.assertEquals(len(g._matchHistory), 1)
         self.assertEquals(len(matches), 1)
         self.assertEquals(matches[u.id], 'v1')
-
-
-
-
-
-
-
-
-
-    def XtestSearchEmptyQueryGraph(self):
-            # Using an empty query graph should result in no solution.
-            q = Graph()
-            g = Graph()
-            solutions = g.search(q)
-            self.assertEquals(len(solutions), 0)
-
-    def XtestSearchEmptyDataGraph(self):
-            # Using an empty data graph should result in no solution.
-            q = Graph()
-            q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-            q.addEdge('u1', Vertex('u3', 'C'))
-
-            g = Graph()
-            solutions = g.search(q)
-            self.assertEquals(len(solutions), 0)
-
-    def XtestOneSimpleSolution(self):
-            q = Graph()
-            q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-            q.addEdge('u1', Vertex('u3', 'C'))
-
-            # Create an exact replica of the query graph as the data graph. This
-            # should result in a solution.
-            g = Graph()
-            g.addEdge(Vertex('v1', 'A'), Vertex('v2', 'B'))
-            g.addEdge('v1', Vertex('v3', 'C'))
-
-            solutions = g.search(q)
-
-            self.assertEquals(len(solutions), 1)
-            self.assertEquals(solutions[0]['u1'], 'v1')
-            self.assertEquals(solutions[0]['u2'], 'v2')
-            self.assertEquals(solutions[0]['u3'], 'v3')
-
-    def XtestTwoSolutions(self):
-
-            q = Graph()
-            q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-            q.addEdge('u1', Vertex('u3', 'C'))
-
-            # Create an exact replica of the query graph as the data graph. Then
-            # create another instance of the A->B,A->C query graph inside the
-            # data graph. This should result in two solutions found.
-            g = Graph()
-            g.addEdge(Vertex('v1', 'A'), Vertex('v2', 'B'))
-            g.addEdge('v1', Vertex('v3', 'C'))
-            g.addEdge(Vertex('v4', 'A'), 'v3')
-            g.addEdge('v4', Vertex('v5', 'B'))
-
-            solutions = g.search(q)
-
-            self.assertEquals(len(solutions), 2)
-            self.assertEquals(solutions[1]['u1'], 'v4')
-            self.assertEquals(solutions[1]['u2'], 'v5')
-            self.assertEquals(solutions[1]['u3'], 'v3')
-
-    def XtestThreeSolutions(self):
-
-            q = Graph()
-            q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-            q.addEdge('u1', Vertex('u3', 'C'))
-
-            # Create an exact replica of the query graph as the data graph. Then
-            # create another instance of the A->B,A->C query graph inside the
-            # data graph. Finally, connect v3(C) and v5(B) with a new v6(A). 
-            # This should result in three solutions.
-            g = Graph()
-            g.addEdge(Vertex('v1', 'A'), Vertex('v2', 'B'))
-            g.addEdge('v1', Vertex('v3', 'C'))
-            g.addEdge(Vertex('v4', 'A'), 'v3')
-            g.addEdge('v4', Vertex('v5', 'B'))
-            g.addEdge(Vertex('v6', 'A'), 'v3')
-            g.addEdge('v6', 'v5')
-
-            solutions = g.search(q)
-
-            self.assertEquals(len(solutions), 3)
-
-
-
-
-
-
-

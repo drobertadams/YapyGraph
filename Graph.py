@@ -12,9 +12,6 @@ class Graph(object):
     Represents a directional graph of Vertex objects. The graph can search for
     matching subgraphs. Vertex degree is maintained as the sum of indegree and
     outdegree.
-
-    TODO: Tests/refactoring for...
-    Graph.search(subGraph)
     """
 
     #--------------------------------------------------------------------------
@@ -217,8 +214,8 @@ class Graph(object):
         Comparison of Subgraph Isomorphism Algorithms in Graph Databases_, 
         Lee et al., 2013.
         Inputs: q - Graph to search for.
-        Outputs: a list of solutions (list of "matches"). matches is a
-        list of [Vertex.id, Vertex.id] mappings.
+        Outputs: a list of solutions. Each solution is a dictionary
+        of vid/vid mappings from query vertex to data graph vertex. 
         """
         #logging.debug('self has %d vertices' % self.numVertices)
         logging.debug(">>> Searching for %s in %s" % (q, self))
@@ -229,11 +226,14 @@ class Graph(object):
 
         # Find candidates for each query vertex. Only search for subgraphs
         # if all query vertices have at least one data vertex candidate.
+        self._solutions = []
         if self._findCandidates(q):
             self._subgraphSearch(matches, q)
 
-        return self.solutions
+        return self._solutions
 
+    #--------------------------------------------------------------------------
+    # PRIVATE METHODS - These aren't the methods you're looking for.
     #--------------------------------------------------------------------------
     def _filterCandidates(self, u):
         """
