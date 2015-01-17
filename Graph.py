@@ -371,7 +371,10 @@ class Graph(object):
                 return str(vertex)
         else:
             # With multiple vertices, print an adjacency list.
-            s = ''
+            s = '['
+            for vertex in self.vertices:
+                s += '%s ' % vertex.id
+            s += '] '
             for vertexID,neighbors in self._edges.items():
                 for neighbor in neighbors:
                     s += '%s->%s, ' % (self._vertices[vertexID], neighbor)
