@@ -105,8 +105,8 @@ class TestGraphClass(unittest.TestCase):
         self.g.deleteVertex('u1')
 
         # u1 shouldn't appear anywhere as an edge or neighbor.
-        self.assertTrue('u2' not in self.g._edges['u1'])
-        self.assertTrue('u2' not in self.g._neighbors['u1'])
+        self.assertTrue('u1' not in self.g._edges)
+        self.assertTrue('u1' not in self.g._neighbors)
         self.assertTrue('u1' not in self.g._edges['u2'])
         self.assertTrue('u1' not in self.g._neighbors['u2'])
 

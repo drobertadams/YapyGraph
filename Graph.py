@@ -129,6 +129,14 @@ class Graph(object):
         for startVID in self._vertices:
             self.deleteEdge(startVID, vid)
 
+        # Remove vid from list of edges.
+        self._edges.pop(vid)
+
+        # Remove the vertex from any neighbor lists.
+        for id in self._neighbors:
+            if id in self._neighbors[id]: self._neighbors[id].remove(vid)
+        self._neighbors.pop(vid)
+
         # Delete the vertex itself.
         return self._vertices.pop(vid)
 
