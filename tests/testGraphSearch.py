@@ -1,7 +1,7 @@
 import unittest
 
-from PGC.YapyGraph.Graph import Graph
-from PGC.YapyGraph.Vertex import Vertex
+from Graph import Graph
+from Vertex import Vertex
 
 class TestGraphSearch(unittest.TestCase):
 
