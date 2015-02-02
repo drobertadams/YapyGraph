@@ -16,5 +16,3 @@ given label, as well as a subgraph search method.
 ## Unit Testing
 
 Unit tests are located in `tests`. Run `nosetests` to run all the unit tests.
-NB: There is no unit test for the Vertex class because it's basically a data
-structure.
