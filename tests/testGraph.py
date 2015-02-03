@@ -1,7 +1,7 @@
 import unittest
 
-from Graph import Graph
-from Vertex import Vertex
+from YapyGraph.Graph import Graph
+from YapyGraph.Vertex import Vertex
 
 class TestGraphClass(unittest.TestCase):
 
