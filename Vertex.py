@@ -5,24 +5,26 @@ Robert Adams (d.robert.adams@gmail.com)
 
 class Vertex(object):
     """
-    A simple represention of a vertex in a graph. 
-    A vertex has an id, and an optional label. A vertex also has a degree, 
-    but it isn't automatically updated. Normally, Graph does that as a
-    Vertex is added to the graph.
+    A simple represention of a vertex in a graph.  A vertex has an id, and an
+    optional label and number. A vertex also has a degree, but it isn't
+    automatically updated. Normally, Graph does that as a Vertex is added to
+    the graph.
     """
 
-    def __init__(self, id, label=None):
+    def __init__(self, id, label=None, number=None):
         """
-        Builds a vertex with the given id (and optional label).
+        Builds a vertex with the given id (and optional label and number).
         Inputs:
             * id - vertex id (string)
             * label - optional vertex label (string)
+            * number - optional vertex number (int)
         Outputs: n/a
         """
-        self.id = id
+        self.id    = id
         self.label = label
-        self.degree = 0
-        self.candidates = [] # used for subgraph searching
+        self.number = number
+        self.degree = 0      # used by Graph
+        self.candidates = [] # used for Graph.search
 
     def __repr__(self):
         return str(self)
@@ -31,4 +33,4 @@ class Vertex(object):
         """
         Returns self as a string.
         """
-        return '<%s,%s>' % (self.id, self.label)
+        return '<%s,%s%s>' % (self.id, self.label, self.number if self.number is not None else "")
