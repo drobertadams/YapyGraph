@@ -126,6 +126,12 @@ class TestGraphClass(unittest.TestCase):
             else:
                 self.assertFalse(True)
 
+    def testFindVertex(self):
+        u1 = self.g.addVertex(Vertex('u1', 'A', 1))
+        self.assertIsNone(self.g.findVertex('X'))
+        self.assertIsNone(self.g.findVertex('A', '2'))
+        self.assertEqual(self.g.findVertex('A', 1), u1)
+
     def testFindVertexWithLabel(self):
         u1 = self.g.addVertex(Vertex('u1', 'A'))
         self.assertIsNone(self.g.findVertexWithLabel('X'))

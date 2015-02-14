@@ -152,6 +152,17 @@ class Graph(object):
                 yield ( startVertex, endVertex )
 
     #--------------------------------------------------------------------------
+    def findVertex(self, label, number=None):
+        """
+        Returns the first Vertex in this graph that has the given label and
+        optional number.
+        """
+        for vertex in self.vertices:
+            if vertex.label == label and vertex.number == number:
+                return vertex
+        return None
+
+    #--------------------------------------------------------------------------
     def findVertexWithLabel(self, label):
         """
         Returns the first Vertex in this graph that has the given label.
