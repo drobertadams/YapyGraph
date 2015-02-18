@@ -234,7 +234,8 @@ class Graph(object):
         Lee et al., 2013.
         Inputs: q - Graph to search for.
         Outputs: a list of solutions. Each solution is a dictionary
-        of vid/vid mappings from query vertex to data graph vertex. 
+        of vid/vid mappings from query vertex to data graph vertex. Only the
+        vertex label is used to find matches (not the vertex number).
         """
         #logging.debug('self has %d vertices' % self.numVertices)
         logging.debug(">>> Searching for %s in %s" % (q, self))
