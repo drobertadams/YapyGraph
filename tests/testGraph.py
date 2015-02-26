@@ -166,6 +166,16 @@ class TestGraphClass(unittest.TestCase):
         self.assertTrue('B' in labels)		
         self.assertTrue('C' in labels)		
 
+    def testNamesProperty(self):
+        self.g.addVertex(Vertex('u1', 'A', 1))
+        self.g.addVertex(Vertex('u2', 'B', 2))
+        self.g.addVertex(Vertex('u3', 'C', 3))
+        names = self.g.names
+        self.assertEquals(len(names), 3)
+        self.assertTrue('A1' in names)		
+        self.assertTrue('B2' in names)		
+        self.assertTrue('C3' in names)		
+
     def testNumVertices(self):
         # Empty graph.
         self.assertEquals(self.g.numVertices, 0)

@@ -212,6 +212,16 @@ class Graph(object):
     
     #--------------------------------------------------------------------------
     @property
+    def names(self):
+        """
+        Returns a list of all the vertex "names" in this graph (there may be 
+        duplicates).
+        Outputs: list of name strings
+        """
+        return [ v.name for v in self.vertices ]
+
+    #--------------------------------------------------------------------------
+    @property
     def numVertices(self):
         """
         Returns the number of vertices in this graph.
