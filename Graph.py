@@ -152,13 +152,12 @@ class Graph(object):
                 yield ( startVertex, endVertex )
 
     #--------------------------------------------------------------------------
-    def findVertex(self, label, number=None):
+    def findVertex(self, name):
         """
-        Returns the first Vertex in this graph that has the given label and
-        optional number.
+        Returns the first Vertex in this graph that has the given name.
         """
         for vertex in self.vertices:
-            if vertex.label == label and vertex.number == number:
+            if vertex.name == name:
                 return vertex
         return None
 

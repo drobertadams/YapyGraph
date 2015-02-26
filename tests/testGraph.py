@@ -129,8 +129,8 @@ class TestGraphClass(unittest.TestCase):
     def testFindVertex(self):
         u1 = self.g.addVertex(Vertex('u1', 'A', 1))
         self.assertIsNone(self.g.findVertex('X'))
-        self.assertIsNone(self.g.findVertex('A', '2'))
-        self.assertEqual(self.g.findVertex('A', 1), u1)
+        self.assertIsNone(self.g.findVertex('A2'))
+        self.assertEqual(self.g.findVertex('A1'), u1)
 
     def testFindVertexWithLabel(self):
         u1 = self.g.addVertex(Vertex('u1', 'A'))
