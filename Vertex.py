@@ -26,16 +26,20 @@ class Vertex(object):
         self.degree = 0      # used by Graph
         self.candidates = [] # used for Graph.search
 
+    @staticmethod
+    def makeName(label, number):
+        if label is None and number is None:
+            return ''
+        if number is None:
+            return label
+        elif label is None:
+            return str(number)
+        else:
+            return '%s%s' % (label, number)
+
     @property
     def name(self):
-        if self.label is None and self.number is None:
-            return ''
-        if self.number is None:
-            return self.label
-        elif self.label is None:
-            return str(self.number)
-        else:
-            return '%s%s' % (self.label, self.number)
+        return self.makeName(self.label, self.number)
 
     def __repr__(self):
         return str(self)

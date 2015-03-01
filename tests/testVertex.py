@@ -35,5 +35,9 @@ class TestVertexClass(unittest.TestCase):
         self.assertEqual(v.number, 1)
         self.assertEqual(v.name, '1')
 
+    def testMakeName(self):
+        name = Vertex.makeName('A', 1)
+        self.assertEqual(name, 'A1')
+
 if __name__ == '__main__':
     unittest.main()
