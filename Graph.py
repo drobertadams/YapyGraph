@@ -85,7 +85,7 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def deleteEdge(self, startVID, endVID):
         """
-        Removes the edge from between the given Vertices. 
+        Removes the edge from between the given vertices. 
         Inputs: startVID, endVID - vertex IDs
         Outputs: False if the edge doesn't exist, True otherwise
         """
@@ -115,7 +115,7 @@ class Graph(object):
         """
         Deletes the vertex with the given vid along with all edges to and 
         from it.
-        Inputs: vertex ID (string) 
+        Inputs: vertex ID
         Outputs: Vertex that was deleted, or None
         """
         if vid not in self._vertices:
@@ -154,7 +154,8 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def findVertex(self, name):
         """
-        Returns the first Vertex in this graph that has the given name.
+        Returns the first Vertex in this graph that has the given name, 
+        or None.
         """
         for vertex in self.vertices:
             if vertex.name == name:
@@ -164,7 +165,8 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def findVertexWithLabel(self, label):
         """
-        Returns the first Vertex in this graph that has the given label.
+        Returns the first Vertex in this graph that has the given label, or
+        None.
         Inputs: string label
         Outputs: Vertex or None
         """
@@ -238,7 +240,7 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def search(self, q):
         """
-        Search for every instance of q in self. Based on _An In-depth 
+        Search for every instance of Graph q in self. Based on _An In-depth 
         Comparison of Subgraph Isomorphism Algorithms in Graph Databases_, 
         Lee et al., 2013.
         Inputs: q - Graph to search for.
@@ -246,7 +248,6 @@ class Graph(object):
         of vid/vid mappings from query vertex to data graph vertex. Only the
         vertex label is used to find matches (not the vertex number).
         """
-        #logging.debug('self has %d vertices' % self.numVertices)
         logging.debug(">>> Searching for %s in %s" % (q, self))
 
         # matches is a dict of vid(query)->vid(data) mappings of which query

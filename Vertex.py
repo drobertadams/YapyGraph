@@ -28,6 +28,10 @@ class Vertex(object):
 
     @staticmethod
     def makeName(label, number):
+        """
+        Converts the given label and number into a vertex "name" (concatenation
+        of the two).
+        """
         if label is None and number is None:
             return ''
         if number is None:
@@ -39,10 +43,10 @@ class Vertex(object):
 
     @property
     def name(self):
+        """
+        Returns the name of this vertex.
+        """
         return self.makeName(self.label, self.number)
-
-    def __repr__(self):
-        return str(self)
 
     def __str__(self):
         """
