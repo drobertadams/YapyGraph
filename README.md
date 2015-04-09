@@ -1,12 +1,37 @@
 # Yet Another Python Graph Implementation
 
-A relatively simple Python graph. Besides the basic graph creation methods this one also performs subgraph searching.
+YapyGraph is a relatively simple directed graph implemented in Python. Besides the basic graph creation methods this one also performs subgraph searching.
 
-## Package Contents
+## Vertex Class
 
-`Vertex.py` is a class that represents a simple vertex. It stores a unique vertex id, an optional string label, an optional numeric identifier, and the total degree (in-degree + out-degree) of the vertex. Thus vertices can be identified by the tuple `<ID, LABEL, NUMBER>` as in `<3, 'A', 1>`. The concatenation of the label and number is called a vertex's "name". So in the example above, the "name" would be "A1".
+`Vertex.py` is the class that represents a simple vertex. Properties include: 
 
-`Graph.py` is the graph class itself. Besides methods to add/delete vertices and edges, it also has methods to query the graph for vertices matching a given label, as well as a subgraph search method.
+* `id` - the vertex identifier. Uniqueness isn't enforced by the vertex.
+* `label` - an optional string label for the vertex (for those applications that need to assign string labels vertices)
+* `number` - an option number for the vertex (for those applications that need to assign numeric identifiers to vertices)
+* `degree` - the total degree (in-degree + out-degree). The Graph class maintains this.
+
+Only one method is available. Besides this, a Vertex doesn't "do" anything.
+
+* `name()` - returns the "name" of the vertex. The "name" is defined as the concatenation of the label and number.
+
+## Graph Class
+
+`Graph.py` defines a directed graph class. Methods include:
+
+* `__init__` - constructor that builds an empty graph
+* `addEdge` - adds an edge between two vertices (either new Vertex objects, or existing vertex ids)
+* `addVertex` - adds a new vertex, if the vertex id doesn't already exist
+* `deleteEdge` - removes the edge between the vertices with the given vertex ids
+* `deleteVetex` - deletes the vertex with the given id, along with all edges connected to it
+* `edges` - iterates over all edges, returning (Vertex,Vertex) tuples
+* `findVertex` - returns the first Vertex that has the given name, or None
+* `hasEdgeBetweenVertices` - returns true if an edge exists between vertices with the given ids
+* `labels` - iterates over all labels in the graph
+* `names` - iterates over all names in the graph
+* `numVertices` - returns the number of vertices
+* `vertices` - returns a list of vertices
+* `search` - searches for every instances of a given subgraph
 
 ## Unit Testing
 

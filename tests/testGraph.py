@@ -132,21 +132,6 @@ class TestGraphClass(unittest.TestCase):
         self.assertIsNone(self.g.findVertex('A2'))
         self.assertEqual(self.g.findVertex('A1'), u1)
 
-    def testFindVertexWithLabel(self):
-        u1 = self.g.addVertex(Vertex('u1', 'A'))
-        self.assertIsNone(self.g.findVertexWithLabel('X'))
-        self.assertEquals(self.g.findVertexWithLabel('A'), u1)
-
-    def testHasEdgeBetweenLabels(self):
-        self.g.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-
-        # Can't find start vertex at all.
-        self.assertFalse(self.g.hasEdgeBetweenLabels('X', 'Y'))
-        # Can't find end vertex.
-        self.assertFalse(self.g.hasEdgeBetweenLabels('A', 'Y'))
-        # Both endpoints exist.
-        self.assertTrue(self.g.hasEdgeBetweenLabels('A', 'B'))
-
     def testHasEdgeBetweenVertices(self):
         self.g.addEdge(Vertex('u0', 'A'), Vertex('u1', 'B'))
         self.g.addEdge('u1', Vertex('u2', 'C'))

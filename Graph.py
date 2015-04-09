@@ -163,33 +163,6 @@ class Graph(object):
         return None
 
     #--------------------------------------------------------------------------
-    def findVertexWithLabel(self, label):
-        """
-        Returns the first Vertex in this graph that has the given label, or
-        None.
-        Inputs: string label
-        Outputs: Vertex or None
-        """
-        for vertex in self.vertices:
-            if vertex.label == label:
-                return vertex
-        return None
-
-    #--------------------------------------------------------------------------
-    def hasEdgeBetweenLabels(self, startLabel, endLabel):
-        """
-        Returns whether or not an edge exists from a vertex with label 
-        startLabel to a vertex with label endLabel.
-        Inputs: startLabel, endLabel - string vertex labels
-        Outputs: True if edge exists, False otherwise
-        """
-        startVertex = self.findVertexWithLabel(startLabel)
-        endVertex = self.findVertexWithLabel(endLabel)
-        if startVertex is None or endVertex is None:
-            return False
-        return self.hasEdgeBetweenVertices(startVertex.id, endVertex.id)
-
-    #--------------------------------------------------------------------------
     def hasEdgeBetweenVertices(self, startVID, endVID):
         """
         Checks to see if an edge exists between the given start and end vid.
@@ -277,9 +250,9 @@ class Graph(object):
     #--------------------------------------------------------------------------
     def _findCandidates(self, q):
         """
-        For each query vertex, create a list of possible data vertices.
+        For each query vertex in q, create a list of possible data vertices.
         Candidate vertices are stored in each vertex in a `candidates`
-        item. This should be called on the data graph.
+        item. This method should be called on the data graph.
         Input: query graph q
         Output: True if all query vertices have at least one candidate, 
         False otherwise.
@@ -423,7 +396,7 @@ class Graph(object):
         u = q._nextUnmatchedVertex(matches)
         logging.debug('query vertex %s needs a match' % u)
 
-        # Refine the list of candidate vertices from that obviously aren't
+        # Refine the list of candidate vertices from those obviously aren't
         # good candidates.
         u.candidates = self._refineCandidates(u.candidates, u, matches)
 
@@ -431,7 +404,7 @@ class Graph(object):
         logging.debug('candidates are %s' % u.candidates)
         for v in u.candidates:
             logging.debug('checking query vertex candidate %s' % v)
-            # Check to see u and v are joinable in g.
+            # Check to see u and v are joinable in self.
             if self._isJoinable(u, v, q, matches):
                 logging.debug("oh yea, that's a match")
 
@@ -459,4 +432,3 @@ class Graph(object):
         # Store the previous set of matches as a JSON string.
         self._matchHistory.append(pickle.dumps(matches))
         matches[u.id] = v.id
-        #matches[v.id] = u.id
