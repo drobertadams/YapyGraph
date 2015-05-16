@@ -361,19 +361,28 @@ class Graph(object):
 
     #--------------------------------------------------------------------------
     def __repr__(self):
+        """Outputs this graph in dot notation. See 
+        http://www.graphviz.org/content/dot-language. Sample output:
+
+            digraph {
+              A->B->C;
+              B->D;
+            }
+
+        """
+        s = "digraph {\n"
+
         if len(self._vertices) == 1:
+            # Only one vertex. Print it's name.
             for vertexID,vertex in self._vertices.items():
-                return str(vertex)
+                s += vertex.name
         else:
-            # With multiple vertices, print an adjacency list.
-            s = '['
-            for vertex in self.vertices:
-                s += '%s ' % vertex.id
-            s += '] '
             for vertexID,neighbors in self._edges.items():
                 for neighbor in neighbors:
-                    s += '%s->%s, ' % (self._vertices[vertexID], neighbor)
-            return s
+                    s += '%s->%s;\n' % (self._vertices[vertexID].name, neighbor.name)
+
+        s = s + "\n}"
+        return s
 
     #--------------------------------------------------------------------------
     def _subgraphSearch(self, matches, q):

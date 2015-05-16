@@ -169,5 +169,27 @@ class TestGraphClass(unittest.TestCase):
         a = self.g.addVertex(Vertex('u1'))
         self.assertEquals(self.g.numVertices, 1)
 
+    def testRepr(self):
+        # Test of the output function (__repr__).
+
+        # No vertices.
+        self.assertEquals(self.g.__repr__(), "digraph {\n\n}")
+
+        # A
+        self.g.addVertex(Vertex('u1', 'A'))
+        self.assertEquals(self.g.__repr__(), "digraph {\nA\n}")
+
+        # A->B
+        self.g.addEdge('u1', Vertex('u2', 'B'))
+        self.assertEquals(self.g.__repr__(), "digraph {\nA->B;\n\n}")
+
+        # A->B->C
+        self.g.addEdge('u2', Vertex('u3', 'C'))
+        self.assertEquals(self.g.__repr__(), "digraph {\nA->B;\nB->C;\n\n}")
+
+        # A->B->C, A->D
+        self.g.addEdge('u1', Vertex('u4', 'D'))
+        self.assertEquals(self.g.__repr__(), "digraph {\nA->B;\nA->D;\nB->C;\n\n}")
+
 if __name__ == '__main__':
     unittest.main()

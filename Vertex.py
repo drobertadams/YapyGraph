@@ -44,7 +44,7 @@ class Vertex(object):
     @property
     def name(self):
         """
-        Returns the name of this vertex.
+        Returns the name (label+number) of this vertex.
         """
         return self.makeName(self.label, self.number)
 
