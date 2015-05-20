@@ -30,8 +30,9 @@ Only one method is available. Besides this, a Vertex doesn't "do" anything.
 * `labels` - iterates over all labels in the graph
 * `names` - iterates over all names in the graph
 * `numVertices` - returns the number of vertices
-* `vertices` - returns a list of vertices
+* `__rep__` - returns a [dot](http://www.graphviz.org/content/dot-language) representation of the graph
 * `search` - searches for every instances of a given subgraph
+* `vertices` - returns a list of vertices
 
 ## Unit Testing
 
