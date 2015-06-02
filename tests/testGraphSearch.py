@@ -157,34 +157,38 @@ class TestGraphSearch(unittest.TestCase):
         self.assertEquals(len(c), 0)
 
         # Build a graph and some vertices for use later.
-        u = Vertex('u1') # query vertex
-        v = Vertex('v1') # data vertex
+        u = Vertex('g0') # query vertex
+        v = Vertex('g0') # data vertex
 
-        # Test with unmatched candidate with the v.degree >= u.degree.
+        # Test with unmatched candidate with the v.degree >= u.degree. This
+        # should return the id of v.
         u.degree = 1
         v.degree = 1
         c = [ v ]
         c = g._refineCandidates(c, u, {})
         self.assertEqual(len(c), 1)
-        self.assertEqual(c[0].id, 'v1')
+        self.assertEqual(c[0].id, 'g0')
 
-        # Test with matched candidate with v.degree >= u.degree.
+        # Test with matched candidate with v.degree >= u.degree. This should
+        # return no candidates.
         u.degree = 1
         v.degree = 1
-        m = { 'v1', 'u1' }
+        m = { 'g0':'g0' }
         c = g._refineCandidates(c, u, m)
         self.assertEqual(len(c), 0)
 
-        # Test with unmatched candidate with v.degree < u.degree.
+        # Test with unmatched candidate with v.degree < u.degree. This should
+        # return no candidates.
         u.degree = 1
         v.degree = 0
         c = g._refineCandidates(c, u, {})
         self.assertEqual(len(c), 0)
 
-        # Test with matched candidate with v.degree < u.degree.
+        # Test with matched candidate with v.degree < u.degree. This should
+        # return no candidates.
         u.degree = 1
         v.degree = 0
-        m = { 'v1', 'u1' }
+        m = { 'g0':'g0' }
         c = g._refineCandidates(c, u, m)
         self.assertEqual(len(c), 0)
 

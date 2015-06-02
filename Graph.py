@@ -221,11 +221,12 @@ class Graph(object):
         of vid/vid mappings from query vertex to data graph vertex. Only the
         vertex label is used to find matches (not the vertex number).
         """
-        logging.debug(">>> Searching for %s in %s" % (q, self))
+        logging.debug("In Graph.search")
+        logging.debug("Searching for %s in %s" % (q, self))
 
         # matches is a dict of vid(query)->vid(data) mappings of which query
         # vertex is matched to which data graph vertex. 
-        matches = {}
+        matches = dict()
 
         # Find candidates for each query vertex. Only search for subgraphs
         # if all query vertices have at least one data vertex candidate.
@@ -233,6 +234,7 @@ class Graph(object):
         if self._findCandidates(q):
             self._subgraphSearch(matches, q)
 
+        logging.debug("Out Graph.search")
         return self._solutions
 
     #--------------------------------------------------------------------------
@@ -252,20 +254,29 @@ class Graph(object):
         """
         For each query vertex in q, create a list of possible data vertices.
         Candidate vertices are stored in each vertex in a `candidates`
-        item. This method should be called on the data graph.
+        list. Candidates are those that have the same label as a data graph 
+        vertex.
         Input: query graph q
         Output: True if all query vertices have at least one candidate, 
         False otherwise.
         Side Effects: query vertices may have their candidates property
         updated.
         """
+        logging.debug("In _findCandidates")
         if self.numVertices == 0 or q.numVertices == 0:
+            logging.debug("No candidates")
             return False
 
         for u in q.vertices:
-           u.candidates = self._filterCandidates(u)
-           if len(u.candidates) == 0:
-              return False
+            u.candidates = self._filterCandidates(u)
+            if len(u.candidates) == 0:
+                logging.debug("No candidates")
+                return False
+        
+        cand_str = ""
+        for i in u.candidates:
+            cand_str += str(i) + " "
+        logging.debug('Raw candidates for %s are %s' % (u, cand_str))
         return True
 
     #--------------------------------------------------------------------------
@@ -342,12 +353,23 @@ class Graph(object):
         Input: 
             * candidates - list of candidate data Vertices
             * u - query vertex for which candidates is a list
-            * matches - data/query vertices that already matched
+            * matches - data/query vertices dictionary already matched
         Output: the revised list of candidate vertices.
         """
-        candidates = [v for v in candidates if (v.degree >= u.degree) and 
-                (v.id not in matches)]
-        return candidates
+        #candidates = [c for c in candidates if (c.degree >= u.degree) and 
+        #        (c.id not in matches)]
+        new_candidates = []
+        for c in candidates:
+            #logging.debug('checking candidate %s' % str(c))
+            #logging.debug('matches is %s' % matches)
+            #logging.debug('candidate degree is %d' % c.degree)
+            if c.degree >= u.degree and c.id not in matches.values():
+                new_candidates.append(c)
+                #logging.debug('%s is a candidate' % c.id)
+            #else:
+                #logging.debug('u degree is %d and c degree is %d' % (u.degree, c.degree))
+                #logging.debug('%s not in matches.values is %s' % (c.id, c.id not in matches.values()))
+        return new_candidates
 
     #--------------------------------------------------------------------------
     def _restoreState(self, matches):
@@ -375,11 +397,14 @@ class Graph(object):
         if len(self._vertices) == 1:
             # Only one vertex. Print it's name.
             for vertexID,vertex in self._vertices.items():
-                s += vertex.name
+                s += "%s_%s" % (vertex.name, vertex.id)
         else:
             for vertexID,neighbors in self._edges.items():
                 for neighbor in neighbors:
-                    s += '%s->%s;\n' % (self._vertices[vertexID].name, neighbor.name)
+                    s += '%s_%s->%s_%s;\n' % (self._vertices[vertexID].name, 
+                        self._vertices[vertexID].id, neighbor.name, neighbor.id)
+                    #s += '%s->%s;\n' % (self._vertices[vertexID].name, 
+                    #    neighbor.name)
 
         s = s + "\n}"
         return s
@@ -394,6 +419,8 @@ class Graph(object):
             * q - query Graph
         Outputs: nothing
         """
+        logging.debug("In _subgraphSearch")
+
         # If every query vertex has been matched, then we're done. Store the
         # solution we found and return. 
         if len(matches) == len(q.vertices):
@@ -403,27 +430,44 @@ class Graph(object):
         
         # Get the next query vertex that needs a match.
         u = q._nextUnmatchedVertex(matches)
-        logging.debug('query vertex %s needs a match' % u)
+        logging.debug('Next unmatched vertex is %s' % u)
+        cand_str = ""
+        for i in u.candidates:
+            cand_str += str(i) + " "
+        logging.debug('Raw candidates of %s are [%s]' % (u,cand_str))
+
+        # Save the current candidates of u so we can restore them after we
+        # try all existing mappings.
+        old_candidates = u.candidates
 
         # Refine the list of candidate vertices from those obviously aren't
         # good candidates.
         u.candidates = self._refineCandidates(u.candidates, u, matches)
+        cand_str = ""
+        for i in u.candidates:
+            cand_str += str(i) + " "
+        logging.debug('Refined candidates are [%s]' % cand_str)
 
         # Check each candidate for a possible match.
-        logging.debug('candidates are %s' % u.candidates)
         for v in u.candidates:
-            logging.debug('checking query vertex candidate %s' % v)
+            logging.debug('Checking candidate %s for vertex %s' % (v,u))
             # Check to see u and v are joinable in self.
             if self._isJoinable(u, v, q, matches):
-                logging.debug("oh yea, that's a match")
+                logging.debug("%s is joinable to %s" % (v, u))
 
                 # Yes they are, so store the mapping and try the next vertex.
                 self._updateState(u, v, matches)
-                logging.debug('matches is now %s' % matches)
+                logging.debug('Matches is now %s' % matches)
                 self._subgraphSearch(matches, q)
 
                 # Undo the last mapping.
                 matches = self._restoreState(matches)
+
+        # _refineCandidates() may have removed vertices. Restore them before
+        # trying another solution (returning from this recursive call).
+        u.candidates = old_candidates
+        logging.debug("Out _subgraphSearch")
+
 
     #--------------------------------------------------------------------------
     def _updateState(self, u, v, matches):

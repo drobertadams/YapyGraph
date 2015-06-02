@@ -177,19 +177,19 @@ class TestGraphClass(unittest.TestCase):
 
         # A
         self.g.addVertex(Vertex('u1', 'A'))
-        self.assertEquals(self.g.__repr__(), "digraph {\nA\n}")
+        self.assertEquals(self.g.__repr__(), "digraph {\nA_u1\n}")
 
         # A->B
         self.g.addEdge('u1', Vertex('u2', 'B'))
-        self.assertEquals(self.g.__repr__(), "digraph {\nA->B;\n\n}")
+        self.assertEquals(self.g.__repr__(), "digraph {\nA_u1->B_u2;\n\n}")
 
         # A->B->C
         self.g.addEdge('u2', Vertex('u3', 'C'))
-        self.assertEquals(self.g.__repr__(), "digraph {\nA->B;\nB->C;\n\n}")
+        self.assertEquals(self.g.__repr__(), "digraph {\nA_u1->B_u2;\nB_u2->C_u3;\n\n}")
 
         # A->B->C, A->D
         self.g.addEdge('u1', Vertex('u4', 'D'))
-        self.assertEquals(self.g.__repr__(), "digraph {\nA->B;\nA->D;\nB->C;\n\n}")
+        self.assertEquals(self.g.__repr__(), "digraph {\nA_u1->B_u2;\nA_u1->D_u4;\nB_u2->C_u3;\n\n}")
 
 if __name__ == '__main__':
     unittest.main()
