@@ -243,30 +243,31 @@ class TestGraphSearch(unittest.TestCase):
         self.assertEquals(solutions[0]['u3'], 'v3')
 
     def testSearchTwoSolutions(self):
-        # A1->B,C  A2->B,C
+        # A1_g0->B_g1->C_g2, A2_g3->B_g1
         g = Graph()
-        g.addEdge(Vertex('v1', 'A'), Vertex('v2', 'B'))
-        g.addEdge('v1', Vertex('v3', 'C'))
-        g.addEdge(Vertex('v4', 'A'), 'v3')
-        g.addEdge('v4', 'v2')
+        g.addEdge(Vertex('g0', 'A'), Vertex('g1', 'B'))
+        g.addEdge('g1', Vertex('g2', 'C'))
+        g.addEdge(Vertex('g3', 'A'), 'g1')
+        #g.addEdge('g3', 'g2')
 
+        # A_g0->B_g1->C_g2
         q = Graph()
-        q.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
-        q.addEdge('u1', Vertex('u3', 'C'))
+        q.addEdge(Vertex('g0', 'A'), Vertex('g1', 'B'))
+        q.addEdge('g1', Vertex('g2', 'C'))
 
         solutions = g.search(q)
 
         self.assertEquals(len(solutions), 2)
 
         # First A->B,C is found.
-        self.assertEquals(solutions[0]['u1'], 'v1')
-        self.assertEquals(solutions[0]['u2'], 'v2')
-        self.assertEquals(solutions[0]['u3'], 'v3')
+        self.assertEquals(solutions[0]['g0'], 'g3')
+        self.assertEquals(solutions[0]['g1'], 'g1')
+        self.assertEquals(solutions[0]['g2'], 'g2')
 
         # Second A->B,C is found.
-        self.assertEquals(solutions[1]['u1'], 'v4')
-        self.assertEquals(solutions[1]['u2'], 'v2')
-        self.assertEquals(solutions[1]['u3'], 'v3')
+        self.assertEquals(solutions[1]['g0'], 'g0')
+        self.assertEquals(solutions[1]['g1'], 'g1')
+        self.assertEquals(solutions[1]['g2'], 'g2')
 
     def testSubgraphSearchSolutionFound(self):
         # Test that when the length of query=>data vertex matches is the 
