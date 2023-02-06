@@ -1,6 +1,6 @@
 import unittest
 
-from YapyGraph.Vertex import Vertex
+from Vertex import Vertex
 
 class TestVertexClass(unittest.TestCase):
 
@@ -36,7 +36,7 @@ class TestVertexClass(unittest.TestCase):
         self.assertEqual(v.name, '1')
 
     def testMakeName(self):
-        name = Vertex.makeName('A', 1)
+        name = Vertex._makeName('A', 1)
         self.assertEqual(name, 'A1')
 
 if __name__ == '__main__':

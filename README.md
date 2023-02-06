@@ -6,7 +6,7 @@ YapyGraph is a relatively simple directed graph implemented in Python. Besides t
 
 `Vertex.py` is the class that represents a simple vertex. Properties include: 
 
-* `id` - the vertex identifier. Uniqueness isn't enforced by the vertex.
+* `id` - the vertex identifier. Uniqueness isn't enforced by Vertex.
 * `label` - an optional string label for the vertex (for those applications that need to assign string labels vertices)
 * `number` - an option number for the vertex (for those applications that need to assign numeric identifiers to vertices)
 * `degree` - the total degree (in-degree + out-degree). The Graph class maintains this.
@@ -23,7 +23,7 @@ Only one method is available. Besides this, a Vertex doesn't "do" anything.
 * `addEdge` - adds an edge between two vertices (either new Vertex objects, or existing vertex ids)
 * `addVertex` - adds a new vertex, if the vertex id doesn't already exist
 * `deleteEdge` - removes the edge between the vertices with the given vertex ids
-* `deleteVetex` - deletes the vertex with the given id, along with all edges connected to it
+* `deleteVertex` - deletes the vertex with the given id, along with all edges connected to it
 * `edges` - iterates over all edges, returning (Vertex,Vertex) tuples
 * `findVertex` - returns the first Vertex that has the given name, or None
 * `hasEdgeBetweenVertices` - returns true if an edge exists between vertices with the given ids
@@ -37,3 +37,11 @@ Only one method is available. Besides this, a Vertex doesn't "do" anything.
 ## Unit Testing
 
 Unit tests are located in `tests`. Run `nosetests` to run all the unit tests.
+
+# Setup
+
+1. `git clone` this repo
+2. Create a virtual environment: `python3 -m venv PATH_TO_YAPYGRAPH`
+3. `cd PATH_TO_YAPYGRAPH`
+4. "Activate" the venv: `source bin/activate`
+5. Install nose: `pip install nose`

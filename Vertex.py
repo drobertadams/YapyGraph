@@ -5,7 +5,7 @@ Robert Adams (d.robert.adams@gmail.com)
 
 class Vertex(object):
     """
-    A simple represention of a vertex in a graph.  A vertex has an id, and an
+    A simple representation of a vertex in a graph.  A vertex has an id, and an
     optional label and number. A vertex also has a degree, but it isn't
     automatically updated. Normally, Graph does that as a Vertex is added to
     the graph.
@@ -27,7 +27,7 @@ class Vertex(object):
         self.candidates = [] # used for Graph.search
 
     @staticmethod
-    def makeName(label, number):
+    def _makeName(label, number):
         """
         Converts the given label and number into a vertex "name" (concatenation
         of the two).
@@ -46,7 +46,7 @@ class Vertex(object):
         """
         Returns the name (label+number) of this vertex.
         """
-        return self.makeName(self.label, self.number)
+        return Vertex._makeName(self.label, self.number)
 
     def __str__(self):
         """

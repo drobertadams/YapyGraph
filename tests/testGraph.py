@@ -1,7 +1,7 @@
 import unittest
 
-from YapyGraph.Graph import Graph
-from YapyGraph.Vertex import Vertex
+import Graph
+import Vertex
 
 class TestGraphClass(unittest.TestCase):
 
@@ -94,7 +94,7 @@ class TestGraphClass(unittest.TestCase):
 
     def testDeleteVertex(self):
         # Deleting a non-existing vertex raises an exception.
-    	self.assertIsNone(self.g.deleteVertex('X'))
+        self.assertIsNone(self.g.deleteVertex('X'))
 
         # Build A->B, B->A
         self.g.addEdge(Vertex('u1', 'A'), Vertex('u2', 'B'))
