@@ -14,39 +14,43 @@ class Graph(object):
     outdegree.
     """
 
-    #--------------------------------------------------------------------------
+    # =========================================================================
     def __init__(self):
         """
         Builds an empty graph.
         """
-        # A dictionary (key is vertex id) of Vertex objects.
+        # The vertices in this graph. Stored as a dictionary using vertex id as 
+        # the key, and a Vertex object as he value.
         self._vertices = {}
 
-        # A dictionary (key is vertex id) of a list of edges to Vertex objects.
+        # The directed edges in this graph. Stored as a dictionary using vertex id as
+        # the key (starting end of the edge), and another vertex id as the value
+        # representing the other endpoint of the edge. Edges are directional
+        # running from key id to value id.
         self._edges = {}
 
-        # A dictionary (key is vertex id) of a list of neighbor Vertex objects.
-        # This is different than _edges in that neighbors stores all adjancent
-        # vertices, regardless of edge direction.
+        # All the neighbors in this graph, regardless of direction. key and value
+        # are both vertex id. If v1 -> v2, then this dictionary stores two entries:
+        # v1 -> v2 and v2 -> v1.
         self._neighbors = {}
 
-        # A list of solutions as used by the seach() method. Since that method
+        # A list of solutions as used by the search() method. Since that method
         # is recursive, we need a single spot to store all the solutions found.
         self._solutions = []
 
         # A stack of match dictionaries as used by _updateState().
         self._matchHistory = []
 
-    #--------------------------------------------------------------------------
-    def addEdge(self, n, m):
+    # =========================================================================
+    def addEdge(self, n: str or Vertex, m: str or Vertex) -> None:
         """
         Adds a directional edge from Vertex n to Vertex m. If 
         neither vertex exist in the graph, they are added. 
         Inputs: n, m - endpoints of the edge; can be either new Vertex 
-            objects or the id of existing vertices.
+            objects or the ids of existing vertices.
         Outputs: none
         """
-        if isinstance(n, str): # n is vid
+        if isinstance(n, str): # n is string vertex id
             n = self._vertices[n]
         else: # n is Vertex
             self.addVertex(n)
@@ -56,15 +60,15 @@ class Graph(object):
         else: # m is Vertex
             self.addVertex(m)
 
-        self._edges[n.id].append(m)
-        self._neighbors[n.id].append(m)
-        self._neighbors[m.id].append(n)
+        self._edges[n.id].append(m)         # add an edge from n to m
+        self._neighbors[n.id].append(m)     # m is a neighbor of n
+        self._neighbors[m.id].append(n)     # n is a neighbor or m
 
-        n.degree = n.degree + 1
+        n.degree = n.degree + 1             # update degrees for each vertex
         m.degree = m.degree + 1
 
-    #--------------------------------------------------------------------------
-    def addVertex(self, vertex):
+    # =========================================================================
+    def addVertex(self, vertex: Vertex) -> Vertex:
         """
         Adds a new vertex to the graph. If a vertex with the same id
         already exists, the new vertex is not added. Instead, a reference
@@ -82,10 +86,10 @@ class Graph(object):
 
         return vertex
 
-    #--------------------------------------------------------------------------
-    def deleteEdge(self, startVID, endVID):
+    # =========================================================================
+    def deleteEdge(self, startVID: str, endVID: str) -> bool:
         """
-        Removes the edge from between the given vertices. 
+        Removes the edge from between the given vertices. This is a one-way removal.
         Inputs: startVID, endVID - vertex IDs
         Outputs: False if the edge doesn't exist, True otherwise
         """
@@ -93,25 +97,31 @@ class Graph(object):
             endVID not in self._vertices:
             return False
 
+        # Get the vertices.
         startVertex = self._vertices[startVID]
         endVertex = self._vertices[endVID]
 
+        # If startVID does not point to endVID, return False.
         if endVertex not in self._edges[startVID]:
-            # startVID does not point to endVID.
             return False
 
+        # Remove the edge.
         self._edges[startVID].remove(endVertex)
 
+        # Update neighbors if we've just removed the only edge
+        # between u1 and u2.
+        #if startVID not in self._edges[endVID]:
         self._neighbors[startVID].remove(endVertex)
         self._neighbors[endVID].remove(startVertex)
 
+        # Update vertex degrees.
         startVertex.degree = startVertex.degree - 1
         endVertex.degree = endVertex.degree - 1
 
         return True
 
-    #--------------------------------------------------------------------------
-    def deleteVertex(self, vid):
+    # =========================================================================
+    def deleteVertex(self, vid: str) -> Vertex:
         """
         Deletes the vertex with the given vid along with all edges to and 
         from it.
@@ -129,10 +139,10 @@ class Graph(object):
         for startVID in self._vertices:
             self.deleteEdge(startVID, vid)
 
-        # Remove vid from list of edges.
+        # Remove vid as a key in the list of edges.
         self._edges.pop(vid)
 
-        # Remove the vertex from any neighbor lists.
+        # Remove vid from any neighbor lists, and from the list itself.
         for id in self._neighbors:
             if id in self._neighbors[id]: self._neighbors[id].remove(vid)
         self._neighbors.pop(vid)
@@ -140,19 +150,19 @@ class Graph(object):
         # Delete the vertex itself.
         return self._vertices.pop(vid)
 
-    #--------------------------------------------------------------------------
+    # =========================================================================
     @property
     def edges(self):
         """
-        Iterator that returns all (Vertex,Vertex) tuples from this graph.
+        Iterator that returns all (Vertex,Vertex) tuples in this graph.
         """
         for startVID in self._edges:
             for endVertex in self._edges[startVID]:
                 startVertex = self._vertices[startVID]
                 yield ( startVertex, endVertex )
 
-    #--------------------------------------------------------------------------
-    def findVertex(self, name):
+    # =========================================================================
+    def findVertex(self, name) -> Vertex:
         """
         Returns the first Vertex in this graph that has the given name, 
         or None.
@@ -162,8 +172,8 @@ class Graph(object):
                 return vertex
         return None
 
-    #--------------------------------------------------------------------------
-    def hasEdgeBetweenVertices(self, startVID, endVID):
+    # =========================================================================
+    def hasEdgeBetweenVertices(self, startVID, endVID) -> bool:
         """
         Checks to see if an edge exists between the given start and end vid.
         Inputs: startVID, endVID - vertex ids
@@ -174,7 +184,7 @@ class Graph(object):
         endVertex = self._vertices[endVID]
         return endVertex in self._edges[startVID]
 
-    #--------------------------------------------------------------------------
+    # =========================================================================
     @property
     def labels(self):
         """
@@ -184,7 +194,7 @@ class Graph(object):
         """
         return [ v.label for v in self.vertices ]
     
-    #--------------------------------------------------------------------------
+    # =========================================================================
     @property
     def names(self):
         """
@@ -194,7 +204,7 @@ class Graph(object):
         """
         return [ v.name for v in self.vertices ]
 
-    #--------------------------------------------------------------------------
+    # =========================================================================
     @property
     def numVertices(self):
         """
@@ -202,7 +212,7 @@ class Graph(object):
         """
         return len(self.vertices)
 
-    #--------------------------------------------------------------------------
+    # =========================================================================
     @property
     def vertices(self):
         """
@@ -210,26 +220,27 @@ class Graph(object):
         """
         return self._vertices.values()
     
-    #--------------------------------------------------------------------------
+    # =========================================================================
     def search(self, q):
         """
-        Search for every instance of Graph q in self. Based on _An In-depth 
-        Comparison of Subgraph Isomorphism Algorithms in Graph Databases_, 
-        Lee et al., 2013.
-        Inputs: q - Graph to search for.
+        Search for every instance of Graph q in self. Based on Ullman's
+        search algorithm as described in _An In-depth Comparison of Subgraph 
+        Isomorphism Algorithms in Graph Databases_, Lee et al., 2013.
+        Inputs: q - Query graph to search for.
         Outputs: a list of solutions. Each solution is a dictionary
-        of vid/vid mappings from query vertex to data graph vertex. Only the
+        of vid/vid mappings from the query graph to the existing graph (the 
+        "data graph" in the language of Lee et al.). Only the
         vertex label is used to find matches (not the vertex number).
         """
         logging.debug("In Graph.search")
         logging.debug("Searching for %s in %s" % (q, self))
 
-        # matches is a dict of vid(query)->vid(data) mappings of which query
+        # matches is a dict of vid(query)->vid(self) mappings of which query
         # vertex is matched to which data graph vertex. 
         matches = dict()
 
         # Find candidates for each query vertex. Only search for subgraphs
-        # if all query vertices have at least one data vertex candidate.
+        # if all query vertices have at least one self vertex candidate.
         self._solutions = []
         if self._findCandidates(q):
             self._subgraphSearch(matches, q)
