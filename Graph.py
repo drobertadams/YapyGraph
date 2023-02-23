@@ -9,9 +9,9 @@ logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 class Graph(object):
     """
-    Represents a directional graph of Vertex objects. The graph can search for
-    matching subgraphs. Vertex degree is maintained as the sum of indegree and
-    outdegree.
+    Represents a directed graph of Vertex objects. The graph can search for
+    matching subgraphs. Vertex degree is maintained as the sum of in-degree and
+    out-degree.
     """
 
     # =========================================================================
@@ -32,100 +32,117 @@ class Graph(object):
         # All the neighbors in this graph, regardless of direction. key and value
         # are both vertex id. If v1 -> v2, then this dictionary stores two entries:
         # v1 -> v2 and v2 -> v1.
-        self._neighbors = {}
-
-        # A list of solutions as used by the search() method. Since that method
-        # is recursive, we need a single spot to store all the solutions found.
-        self._solutions = []
+        #self._neighbors = {}
 
         # A stack of match dictionaries as used by _updateState().
-        self._matchHistory = []
+        # self._matchHistory = []
 
     # =========================================================================
-    def addEdge(self, n: str or Vertex, m: str or Vertex) -> None:
+    def addEdge(self, u:str or Vertex, v:str or Vertex, bi:bool=False) -> None:
         """
-        Adds a directional edge from Vertex n to Vertex m. If 
-        neither vertex exist in the graph, they are added. 
-        Inputs: n, m - endpoints of the edge; can be either new Vertex 
-            objects or the ids of existing vertices.
-        Outputs: none
+        Adds a directed edge from u to v. If u or v are strings, they are vertex
+        id's of existing vertices. If either doesn't exist, this method raises
+        an exception. u and v can also be Vertex objects, in which case they
+        are added as new vertices to the graph.
+
+        Inputs: 
+            u,v - endpoints of the edge; can be either new Vertex objects or 
+                  the ids of existing vertices.
+            bi - is this edge bidirectional? If so, two edges will be added
         """
-        if isinstance(n, str): # n is string vertex id
-            n = self._vertices[n]
-        else: # n is Vertex
-            self.addVertex(n)
+        if isinstance(u, str): # u is string vertex id, find it
+            u = self._vertices[u]
+            if u is None:
+                raise Exception("Vertex %s does not exist." % u) 
+        else: # u is a new Vertex, add it
+            self.addVertex(u)
 
-        if isinstance(m, str): # m is vid
-            m = self._vertices[m]
-        else: # m is Vertex
-            self.addVertex(m)
+        if isinstance(v, str): # v is vid, find it
+            v = self._vertices[v]
+            if v is None:
+                raise Exception("Vertex %s does not exist." % v) 
+                return
+        else: # v is a new Vertex, add it
+            self.addVertex(v)
 
-        self._edges[n.id].append(m)         # add an edge from n to m
-        self._neighbors[n.id].append(m)     # m is a neighbor of n
-        self._neighbors[m.id].append(n)     # n is a neighbor or m
+        # Update edges if they don't already exist.
+        if v not in self._edges[u.id]:
+            self._edges[u.id].append(v)     # add an edge from u to v
+            u.degree += 1
+            v.degree += 1
+            # Update neighbors
+            # self._neighbors[u.id].append(v)     # m is a neighbor of n
+            # self._neighbors[v.id].append(u)     # n is a neighbor or m
 
-        n.degree = n.degree + 1             # update degrees for each vertex
-        m.degree = m.degree + 1
+        if bi and u not in self._edges[v.id]:
+            self._edges[v.id].append(u)     # add an edge from v to u 
+            u.degree += 1
+            v.degree += 1     
 
     # =========================================================================
-    def addVertex(self, vertex: Vertex) -> Vertex:
+    def addVertex(self, v:Vertex) -> Vertex:
         """
         Adds a new vertex to the graph. If a vertex with the same id
         already exists, the new vertex is not added. Instead, a reference
         to the existing vertex is returned.
-        Inputs: vertex - Vertex object to add
+
+        Inputs: v - Vertex to add
         Outputs: The Vertex that was just added, or the existing Vertex if
         one already exists with the same id.
         """
-        if vertex.id not in self._vertices:
-            self._vertices[vertex.id] = vertex
-            self._edges[vertex.id] = []
-            self._neighbors[vertex.id] = []
+        if v.id not in self._vertices:
+            self._vertices[v.id] = v
+            self._edges[v.id] = []  # no edges yet
+           # self._neighbors[v.id] = []
         else:
-            vertex = self._vertices[vertex.id]
+            v = self._vertices[v.id]
 
-        return vertex
+        return v
 
     # =========================================================================
-    def deleteEdge(self, startVID: str, endVID: str) -> bool:
+    def deleteEdge(self, sid:str, eid:str) -> bool:
         """
         Removes the edge from between the given vertices. This is a one-way removal.
-        Inputs: startVID, endVID - vertex IDs
+
+        Inputs: 
+            sid, eid - start and end vertex IDs
         Outputs: False if the edge doesn't exist, True otherwise
         """
-        if startVID not in self._vertices or \
-            endVID not in self._vertices:
+        # sid and eid must be valid vertices.
+        if sid not in self._vertices or \
+            eid not in self._vertices:
             return False
 
         # Get the vertices.
-        startVertex = self._vertices[startVID]
-        endVertex = self._vertices[endVID]
+        startVertex = self._vertices[sid]
+        endVertex = self._vertices[eid]
 
-        # If startVID does not point to endVID, return False.
-        if endVertex not in self._edges[startVID]:
+        # If sid does not point to eid, return False.
+        if endVertex not in self._edges[sid]:
             return False
 
         # Remove the edge.
-        self._edges[startVID].remove(endVertex)
+        self._edges[sid].remove(endVertex)
 
         # Update neighbors if we've just removed the only edge
         # between u1 and u2.
-        #if startVID not in self._edges[endVID]:
-        self._neighbors[startVID].remove(endVertex)
-        self._neighbors[endVID].remove(startVertex)
+        # if startVID not in self._edges[endVID]:
+        #     self._neighbors[startVID].remove(endVertex)
+        #     self._neighbors[endVID].remove(startVertex)
 
         # Update vertex degrees.
-        startVertex.degree = startVertex.degree - 1
-        endVertex.degree = endVertex.degree - 1
+        startVertex.degree -= 1
+        endVertex.degree   -= 1
 
         return True
 
     # =========================================================================
-    def deleteVertex(self, vid: str) -> Vertex:
+    def deleteVertex(self, vid:str) -> Vertex:
         """
         Deletes the vertex with the given vid along with all edges to and 
         from it.
-        Inputs: vertex ID
+
+        Inputs: vid - vertex ID to delete
         Outputs: Vertex that was deleted, or None
         """
         if vid not in self._vertices:
@@ -143,15 +160,14 @@ class Graph(object):
         self._edges.pop(vid)
 
         # Remove vid from any neighbor lists, and from the list itself.
-        for id in self._neighbors:
-            if id in self._neighbors[id]: self._neighbors[id].remove(vid)
-        self._neighbors.pop(vid)
+        # for id in self._neighbors:
+        #     if id in self._neighbors[id]: self._neighbors[id].remove(vid)
+        # self._neighbors.pop(vid)
 
         # Delete the vertex itself.
         return self._vertices.pop(vid)
 
     # =========================================================================
-    @property
     def edges(self):
         """
         Iterator that returns all (Vertex,Vertex) tuples in this graph.
@@ -162,18 +178,7 @@ class Graph(object):
                 yield ( startVertex, endVertex )
 
     # =========================================================================
-    def findVertex(self, name) -> Vertex:
-        """
-        Returns the first Vertex in this graph that has the given name, 
-        or None.
-        """
-        for vertex in self.vertices:
-            if vertex.name == name:
-                return vertex
-        return None
-
-    # =========================================================================
-    def hasEdgeBetweenVertices(self, startVID, endVID) -> bool:
+    def hasEdge(self, startVID:str, endVID:str) -> bool:
         """
         Checks to see if an edge exists between the given start and end vid.
         Inputs: startVID, endVID - vertex ids
@@ -185,214 +190,13 @@ class Graph(object):
         return endVertex in self._edges[startVID]
 
     # =========================================================================
-    @property
-    def labels(self):
-        """
-        Returns a list of all the labels in this graph (there may be 
-        duplicates).
-        Outputs: list of label strings
-        """
-        return [ v.label for v in self.vertices ]
-    
-    # =========================================================================
-    @property
-    def names(self):
-        """
-        Returns a list of all the vertex "names" in this graph (there may be 
-        duplicates).
-        Outputs: list of name strings
-        """
-        return [ v.name for v in self.vertices ]
-
-    # =========================================================================
-    @property
     def numVertices(self):
         """
         Returns the number of vertices in this graph.
         """
-        return len(self.vertices)
-
-    # =========================================================================
-    @property
-    def vertices(self):
-        """
-        Returns a list of Vertex objects in this graph.
-        """
-        return self._vertices.values()
+        return len(self._vertices)
     
     # =========================================================================
-    def search(self, q):
-        """
-        Search for every instance of Graph q in self. Based on Ullman's
-        search algorithm as described in _An In-depth Comparison of Subgraph 
-        Isomorphism Algorithms in Graph Databases_, Lee et al., 2013.
-        Inputs: q - Query graph to search for.
-        Outputs: a list of solutions. Each solution is a dictionary
-        of vid/vid mappings from the query graph to the existing graph (the 
-        "data graph" in the language of Lee et al.). Only the
-        vertex label is used to find matches (not the vertex number).
-        """
-        logging.debug("In Graph.search")
-        logging.debug("Searching for %s in %s" % (q, self))
-
-        # matches is a dict of vid(query)->vid(self) mappings of which query
-        # vertex is matched to which data graph vertex. 
-        matches = dict()
-
-        # Find candidates for each query vertex. Only search for subgraphs
-        # if all query vertices have at least one self vertex candidate.
-        self._solutions = []
-        if self._findCandidates(q):
-            self._subgraphSearch(matches, q)
-
-        logging.debug("Out Graph.search")
-        return self._solutions
-
-    #--------------------------------------------------------------------------
-    # PRIVATE METHODS - These aren't the methods you're looking for.
-    #--------------------------------------------------------------------------
-    def _filterCandidates(self, u):
-        """
-        Returns a list of data Vertices that have the same label as query
-        Vertex u. This method should be called on the data graph.
-        Input: Query Vertex u.
-        Output: list of Vertices from self.
-        """
-        return [vertex for vertex in self.vertices if vertex.label == u.label]
-        
-    #--------------------------------------------------------------------------
-    def _findCandidates(self, q):
-        """
-        For each query vertex in q, create a list of possible data vertices.
-        Candidate vertices are stored in each vertex in a `candidates`
-        list. Candidates are those that have the same label as a data graph 
-        vertex.
-        Input: query graph q
-        Output: True if all query vertices have at least one candidate, 
-        False otherwise.
-        Side Effects: query vertices may have their candidates property
-        updated.
-        """
-        logging.debug("In _findCandidates")
-        if self.numVertices == 0 or q.numVertices == 0:
-            logging.debug("No candidates")
-            return False
-
-        for u in q.vertices:
-            u.candidates = self._filterCandidates(u)
-            if len(u.candidates) == 0:
-                logging.debug("No candidates")
-                return False
-        
-        cand_str = ""
-        for i in u.candidates:
-            cand_str += str(i) + " "
-        logging.debug('Raw candidates for %s are %s' % (u, cand_str))
-        return True
-
-    #--------------------------------------------------------------------------
-    def _findMatchedNeighbors(self, u, matches):
-        """
-        Find the matched vertices adjacent to query vertex u. This method
-        should be called on the query graph. "neighbor" here is irregardless
-        of edge direction. Two vertices are considered neighbors if any
-        edge connects them.
-        Input: query Vertex u, dict of matches
-        Output: List of neighbors of u that appear in matches.
-        """
-        if u is None or matches is None or len(matches) == 0:
-            return []
-
-        return [neighborVertex for neighborVertex in self._neighbors[u.id] \
-            if neighborVertex.id in matches]
-
-    #--------------------------------------------------------------------------
-    def _isJoinable(self, u, v, q, matches):		
-        """
-        See if query Vertex u and data Vertex v are "joinable" (matchable
-        for a solution). Iterates through all matched query 
-        vertices adjacent to u. If some adjacent query vertex, n, is already 
-        matched with a data vertex, m, then it checks whether there is a 
-        corresponding edge between v and m in the data graph going in 
-        the same direction as the edge between u and n.
-        Inputs: 
-            * query Vertex u
-            * data Vertex v
-            * query Graph q, 
-            * list of previously matched query/data vertices
-        Outputs: True if u and v can be matched, False otherwise
-        """
-
-        # If nothing has been matched, then we can join u and v.
-        if len(matches) == 0:
-            return True
-
-        neighbors = q._findMatchedNeighbors(u, matches)
-        for n in neighbors:
-            m = self._vertices[matches[n.id]]
-            if q.hasEdgeBetweenVertices(u.id, n.id) and \
-               self.hasEdgeBetweenVertices(v.id, m.id):
-                return True
-            elif q.hasEdgeBetweenVertices(n.id, u.id) and \
-               self.hasEdgeBetweenVertices(m.id, v.id):
-                return True
-            else:
-                return False
-
-        return False
-
-    #--------------------------------------------------------------------------
-    def _nextUnmatchedVertex(self, matches):
-        """
-        Returns a query vertex whose vid does not appear in matches. This 
-        should be called on the query graph.
-        Input: dictionary of matches
-        Output: The next unmatched Vertex, or None.
-        """
-        for vertex in self.vertices:
-            if vertex.id not in matches:
-                return vertex
-        return None
-
-    #--------------------------------------------------------------------------
-    def _refineCandidates(self, candidates, u, matches):
-        """
-        Given a query vertex u, removes candidate data vertices from the
-        original candidate list (candidates) created by _filterCandidates()
-        that are no longer obvious matches because they have a degree smaller
-        than u. It also removes vertices that have already been matched.
-        Input: 
-            * candidates - list of candidate data Vertices
-            * u - query vertex for which candidates is a list
-            * matches - data/query vertices dictionary already matched
-        Output: the revised list of candidate vertices.
-        """
-        #candidates = [c for c in candidates if (c.degree >= u.degree) and 
-        #        (c.id not in matches)]
-        new_candidates = []
-        for c in candidates:
-            #logging.debug('checking candidate %s' % str(c))
-            #logging.debug('matches is %s' % matches)
-            #logging.debug('candidate degree is %d' % c.degree)
-            if c.degree >= u.degree and c.id not in matches.values():
-                new_candidates.append(c)
-                #logging.debug('%s is a candidate' % c.id)
-            #else:
-                #logging.debug('u degree is %d and c degree is %d' % (u.degree, c.degree))
-                #logging.debug('%s not in matches.values is %s' % (c.id, c.id not in matches.values()))
-        return new_candidates
-
-    #--------------------------------------------------------------------------
-    def _restoreState(self, matches):
-        """
-        Undoes the last vertex match by removing the last matching dict
-        from _matchHistory and returning it.
-        Input: dict of previous matches (stored as JSON strings)
-        Output: previous match dict.
-        """
-        return pickle.loads(self._matchHistory.pop())
-
-    #--------------------------------------------------------------------------
     def __repr__(self):
         """Outputs this graph in dot notation. See 
         http://www.graphviz.org/content/dot-language. Sample output:
@@ -408,91 +212,209 @@ class Graph(object):
         if len(self._vertices) == 1:
             # Only one vertex. Print it's name.
             for vertexID,vertex in self._vertices.items():
-                s += "%s_%s" % (vertex.name, vertex.id)
+                s += str(vertex)
         else:
             for vertexID,neighbors in self._edges.items():
                 for neighbor in neighbors:
-                    s += '%s_%s->%s_%s;\n' % (self._vertices[vertexID].name, 
-                        self._vertices[vertexID].id, neighbor.name, neighbor.id)
-                    #s += '%s->%s;\n' % (self._vertices[vertexID].name, 
-                    #    neighbor.name)
+                    s += "%s->%s;\n" % ( str(self._vertices[vertexID]), str(neighbor) )
 
-        s = s + "\n}"
+        s += "\n}"
         return s
 
+    # -------------------------------------------------------------------------
+    def search(self, q) -> list:
+        """
+        Search for every instance of Graph q in self. Based on Ullman's
+        search algorithm as described in _An In-depth Comparison of Subgraph 
+        Isomorphism Algorithms in Graph Databases_, Lee et al., 2013.
+        NB: Only the vertex labels are used to find matches.
+
+        https://dl.acm.org/doi/pdf/10.14778/2535568.2448946
+        https://dl-acm-org.ezproxy.gvsu.edu/doi/pdf/10.14778/2535568.2448946
+
+        Inputs: query Graph q
+
+        Output: all subgraph isomorphisms of q in g, in the form of vid->vid
+        mappings from q to g.
+        """
+        # A list of all isomorphism solutions.
+        solutions = []
+
+        # 1: M := ∅;
+        # M is a dict of vid(q)->vid(g) mappings for a single isomorphism. Once
+        # one is found, it will be appended to `solutions`.
+        M = dict()
+
+        # C is a list of candidates for each query vertex u.
+        C = self._findCandidates(q) 
+        if len(C) != q.numVertices() or len(C) == 0:
+            # If we didn't find candidates for all u's, return no solutions.
+            return solutions
+        
+        # 8: SubgraphSearch (q, g, M, ...);
+        self._subgraphSearch(q, M, C, solutions)
+
+        return solutions
+
+    # =========================================================================
+    def vertices(self):
+        """
+        Returns a list of Vertex objects in this graph.
+        """
+        return self._vertices.values()
+    
+    # =========================================================================
+    def _filterCandidates(self, u:Vertex) -> list:
+        """
+        Returns a list of data (g) vertices that have the same label as query
+        vertex u and whose degree is >= u's degree.
+        This method should be called on the data graph.
+
+        Input: Query vertex u.
+        Output: List of vertices v from self (g).
+        """
+        return [ v for v in self.vertices() if v.hasLabel(u.label) and v.degree >= u.degree ]
+        
+    # =========================================================================
+    def _findCandidates(self, q) -> dict:
+        """ 
+        Returns a dictionary of candidate data vertices for each query vertex u,
+        calling _filterCandidates() to do the heavy lifting. The resulting 
+        dictionary has key u.id and value is a list of v.id's.
+        
+        Input: query graph q
+        """
+        C = dict()
+
+        # 2: for each u ∈ V(q) do
+        for u in q.vertices():
+
+            # 3: C(u) := FilterCandidates (q, g, u, . . .);
+            #    [[ ∀v ∈ C(u)((v ∈ V(g)) ∧ (L(u) ⊆ L(v))) ]]
+            c_u = self._filterCandidates(u)
+
+            # 4: if C(u) = ∅ then
+            if len(c_u) == 0:
+                # There are no appropriate candidates, return an empty dictionary.
+                return dict()
+            else:
+                # Add the candidates for u to the dictionary.
+                C[u.id] = c_u
+
+        return C
+
+    # =========================================================================
+    def _findMatchedNeighbors(self, u:Vertex, q, M:dict) -> list:
+        """
+        Returns a list of all neighbors of query vertex q that has already been
+        matched in M.
+
+        Inputs:
+            u - query vertex that is basis for the search
+            q - query graph
+            M - current matches
+
+        Output: List of neighbors of u that have been matched.
+        """
+        if u is None:
+            return []
+        
+        return [n for n in q._edges[u.id] if q._isMatched(n, M)]
+
+    # =========================================================================
+    def _isJoinable(self, u:Vertex, v:Vertex, q, M:dict) -> bool:	
+        """
+        Returns true if query vertex u and data Vertex v are "joinable" (matchable
+        for a solution). 
+        
+        Iterates through all matched neighbors, n, of u. If n is matched to data
+        vertex m, then we check to see if there is an edge from v to m in the data
+        graph.
+
+        8: [[ ∀(u', v' ∈ M((u, u') ∈ E(q) =⇒ (v, v') ∈ E(g) ∧ L(u, u') = L(v, v)) ]]
+
+        Inputs: 
+            u - query vertex
+            v - data vertex
+            q - query graph
+            M - list of matched id's 
+        Outputs: True if u and v can be matched, False otherwise
+        """
+
+        neighbors = q._findMatchedNeighbors(u, q, M)
+
+        for n in neighbors:
+            # Get matching data vertex for n.
+            m = self._vertices[M[n.id]]
+
+            # We know there's an edge from u to n, so make sure there's
+            # an edge from v to m.
+            if not self.hasEdge(v.id, m.id):
+                return False
+
+        return True
+    
+    # =========================================================================
+    def _isMatched(self, u:Vertex, M:dict) -> bool:
+        """
+        Returns True if vertex u has already been matched in M, appearing on
+        either side of the u->v mapping.
+        """
+        return u.id in M.keys() or u.id in M.values()
+
+    # =========================================================================
+    def _nextQueryVertex(self, q, M:dict) -> Vertex:
+        """
+        Returns a query vertex from `q` whose id does not appear in `M`.
+        [[ u ∈ V(q) ∧ ∀(u', v) ∈ M(u' != u) ]]
+
+        Inputs: q - the query graph
+                M - the current mapping solution
+        Output: The next unmatched Vertex, or None.
+        """
+        for vertex in q.vertices():
+            if vertex.id not in M:
+                return vertex
+            
+        return None
+
     #--------------------------------------------------------------------------
-    def _subgraphSearch(self, matches, q):
+    def _subgraphSearch(self, q, M: dict, C: list, solutions:list):
         """
         Searches for all instances of q in self. Solutions are stored in
-        self._solutions.
-        Inputs: 
-            * matches - dictionary of vertex mappings
-            * q - query Graph
-        Outputs: nothing
-        """
-        logging.debug("In _subgraphSearch")
+        `solutions`.
 
+        Inputs:
+            q - query Graph
+            M - dictionary of vertex mappings
+            C - candidate data vertices for each query vertex
+            solutions - solution mappings found so far
+        """
+
+        # 1: if |M| = |V (q)| then
+        # 2:    report M;
         # If every query vertex has been matched, then we're done. Store the
         # solution we found and return. 
-        if len(matches) == len(q.vertices):
-            logging.debug('found a solution %s' % matches)
-            self._solutions.append(copy.deepcopy(matches))
-            return 
-        
-        # Get the next query vertex that needs a match.
-        u = q._nextUnmatchedVertex(matches)
-        logging.debug('Next unmatched vertex is %s' % u)
-        cand_str = ""
-        for i in u.candidates:
-            cand_str += str(i) + " "
-        logging.debug('Raw candidates of %s are [%s]' % (u,cand_str))
+        if len(M) == q.numVertices():
+            solutions.append(copy.deepcopy(M))
 
-        # Save the current candidates of u so we can restore them after we
-        # try all existing mappings.
-        old_candidates = u.candidates
+        else:
+            # 4: u := NextQueryVertex (...);
+            # [[ u ∈ V(q) ∧ ∀(u', v) ∈ M(u' != u) ]]
+            # Get the next query vertex that needs a match.
+            u = self._nextQueryVertex(q, M)
 
-        # Refine the list of candidate vertices from those obviously aren't
-        # good candidates.
-        u.candidates = self._refineCandidates(u.candidates, u, matches)
-        cand_str = ""
-        for i in u.candidates:
-            cand_str += str(i) + " "
-        logging.debug('Refined candidates are [%s]' % cand_str)
+            # 6: for each v ∈ C(u) such that v is not yet matched do
+            for v in [ c for c in C[u.id] if not self._isMatched(c, M) ]:
+                # 7: if IsJoinable (q, g, M, u, v, . . .) then
+                if self._isJoinable(u, v, q, M):
+                    # 9: UpdateState (M, u, v, . . .);
+                    # [[ (u, v) ∈ M ]]
+                    M[u.id] = v.id
+                
+                    # 10: SubgraphSearch (q, g,M, ...);
+                    self._subgraphSearch(q, M, C, solutions)
 
-        # Check each candidate for a possible match.
-        for v in u.candidates:
-            logging.debug('Checking candidate %s for vertex %s' % (v,u))
-            # Check to see u and v are joinable in self.
-            if self._isJoinable(u, v, q, matches):
-                logging.debug("%s is joinable to %s" % (v, u))
-
-                # Yes they are, so store the mapping and try the next vertex.
-                self._updateState(u, v, matches)
-                logging.debug('Matches is now %s' % matches)
-                self._subgraphSearch(matches, q)
-
-                # Undo the last mapping.
-                matches = self._restoreState(matches)
-
-        # _refineCandidates() may have removed vertices. Restore them before
-        # trying another solution (returning from this recursive call).
-        u.candidates = old_candidates
-        logging.debug("Out _subgraphSearch")
-
-
-    #--------------------------------------------------------------------------
-    def _updateState(self, u, v, matches):
-        """
-        Stores the current match of query Vertex u to data Vertex v as a
-        possible solution. Each call to _updateState() also stores the previous
-        set of matches to a stack of matches, so that _restoreState() can undo
-        it.
-        Inputs: 
-            * u - query Vertex
-            * v - data Vertex
-            * matches - current matches
-        Outputs: nothing
-        """
-        # Store the previous set of matches as a JSON string.
-        self._matchHistory.append(pickle.dumps(matches))
-        matches[u.id] = v.id
+                    # 11: RestoreState (M, u, v, . . .);
+                    # [[ (u, v) ∈/ M ]]
+                    M.pop(u.id)

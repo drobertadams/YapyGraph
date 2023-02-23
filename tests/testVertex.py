@@ -5,39 +5,50 @@ from Vertex import Vertex
 class TestVertexClass(unittest.TestCase):
 
     def testConstructorLabelNumber(self):
-        """Building a vertex with an id, label, and number should store all."""
-        v = Vertex('v1', 'label', 1)
-        self.assertEqual(v.id, 'v1')
+        v = Vertex('v1', 'label', 1)        # build vertex with everything
+        self.assertEqual(v.id, 'v1')        # should get it all back
         self.assertEqual(v.label, 'label')
         self.assertEqual(v.number, 1)
-        self.assertEqual(v.name, 'label1')
 
     def testConstructorNoLabelNoNumber(self):
-        """Building a vertex with only an id should have None for the label,
-        and number."""
-        v = Vertex('v1')
-        self.assertEqual(v.id, 'v1')
-        self.assertIsNone(v.label)
+        v = Vertex('v1')                # build vertex with only an id
+        self.assertEqual(v.id, 'v1')    # should get the id back
+        self.assertIsNone(v.label)      # the rest should return None or empty string
         self.assertIsNone(v.number)
-        self.assertEqual(v.name, '')
 
     def testConstructorLabelNoNumber(self):
         v = Vertex('v1', 'label')
         self.assertEqual(v.id, 'v1')
-        self.assertEqual(v.label, 'label')
+        self.assertIn(v.label, 'label')
         self.assertIsNone(v.number)
-        self.assertEqual(v.name, 'label')
 
+        # Try multiple labels.
+        v2 = Vertex('v2', ['A', 'B'])
+        self.assertTrue(v2.hasLabel('A'))
+        self.assertTrue(v2.hasLabel('B'))
+        
     def testConstructorNoLabelNumber(self):
         v = Vertex('v1', None, 1)
         self.assertEqual(v.id, 'v1')
         self.assertIsNone(v.label)
         self.assertEqual(v.number, 1)
-        self.assertEqual(v.name, '1')
 
-    def testMakeName(self):
-        name = Vertex._makeName('A', 1)
-        self.assertEqual(name, 'A1')
+    def testHasLabel(self):
+        # No label.
+        v = Vertex('v1')
+        self.assertFalse( v.hasLabel('A') )
+
+        # Simple string label.
+        v.label = 'A'
+        self.assertFalse( v.hasLabel('B') )
+        self.assertTrue( v.hasLabel('A') )
+        self.assertTrue( v.hasLabel(['B', 'A']) )
+
+        # List of labels.
+        v.label = ['A', 'C']
+        self.assertFalse( v.hasLabel('B') )
+        self.assertTrue( v.hasLabel('A') )
+        self.assertTrue( v.hasLabel(['D', 'C']) )
 
 if __name__ == '__main__':
     unittest.main()
