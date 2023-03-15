@@ -50,5 +50,23 @@ class TestVertexClass(unittest.TestCase):
         self.assertTrue( v.hasLabel('A') )
         self.assertTrue( v.hasLabel(['D', 'C']) )
 
+    def testName(self):
+        v = Vertex('a')
+        self.assertEquals(v.name(), "None")
+
+        v.label = 'A'
+        self.assertEquals(v.name(), "A")
+
+        v.number = '1'
+        self.assertEquals(v.name(), "A1")
+
+        v.label = ('A', 'B', 'C')
+        self.assertEquals(v.name(), "ABC1")
+
+        v.label = None # just left with a number now
+        self.assertEquals(v.name(), "1")
+
+
+
 if __name__ == '__main__':
     unittest.main()

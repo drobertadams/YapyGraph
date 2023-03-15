@@ -44,6 +44,33 @@ class Vertex(object):
                     return True
         
         return False
+    
+    # =========================================================================
+    def name(self) -> str:
+        """
+        Returns the "name" of this vertex, which is simply the concatenation of
+        the label (or all the labels if "label" is a list) and number. Note this 
+        is different than __str__ which is mostly used for debugging.
+        """
+        name = ''
+
+        # Attach all the labels.
+        if self.label is not None:
+            if isinstance(self.label, str):
+                name += self.label
+            else:
+                for l in self.label:
+                    name += l
+
+        # Attach the number, if there is one.
+        if self.number is not None:
+            name += self.number
+       
+        # If there is no label or number, return "None".
+        if len(name) == 0:
+            name = 'None'
+
+        return name   
 
     # =========================================================================
     def __str__(self) -> str:
