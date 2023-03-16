@@ -46,31 +46,36 @@ class Vertex(object):
         return False
     
     # =========================================================================
-    def name(self) -> str:
-        """
-        Returns the "name" of this vertex, which is simply the concatenation of
-        the label (or all the labels if "label" is a list) and number. Note this 
-        is different than __str__ which is mostly used for debugging.
-        """
+    @staticmethod
+    def makeName(label:str or list=None, number:int=None) -> str:
         name = ''
 
         # Attach all the labels.
-        if self.label is not None:
-            if isinstance(self.label, str):
-                name += self.label
+        if label is not None:
+            if isinstance(label, str):
+                name += label
             else:
-                for l in self.label:
+                for l in label:
                     name += l
 
         # Attach the number, if there is one.
-        if self.number is not None:
-            name += self.number
+        if number is not None:
+            name += number
        
         # If there is no label or number, return "None".
         if len(name) == 0:
             name = 'None'
 
         return name   
+    
+    # =========================================================================
+    def name(self) -> str:
+        """
+        Returns the "name" of this vertex, which is simply the concatenation of
+        the label (or all the labels if "label" is a list) and number. Note this 
+        is different than __str__ which is mostly used for debugging.
+        """
+        return Vertex.makeName(self.label, self.number)
 
     # =========================================================================
     def __str__(self) -> str:
