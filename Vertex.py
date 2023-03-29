@@ -60,7 +60,7 @@ class Vertex(object):
 
         # Attach the number, if there is one.
         if number is not None:
-            name += number
+            name += str(number)
        
         # If there is no label or number, return "None".
         if len(name) == 0:

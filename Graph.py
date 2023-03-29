@@ -190,6 +190,17 @@ class Graph(object):
         return endVertex in self._edges[startVID]
 
     # =========================================================================
+    def hasVertex(self, name:str) -> Vertex:
+        """
+        Returns the first Vertex in this graph that has the given name, 
+        or None.
+        """
+        for v in self._vertices.values():
+            if v.name() == name:
+                return v
+        return None
+    
+    # =========================================================================
     def numVertices(self):
         """
         Returns the number of vertices in this graph.

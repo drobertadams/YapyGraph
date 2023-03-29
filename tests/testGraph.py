@@ -187,6 +187,18 @@ class TestGraphClass(unittest.TestCase):
                 self.assertFalse(True)
 
     # =========================================================================
+    def testFindVertex(self):
+        self.assertIsNone(self.g.hasVertex('X'))       # there is no "X" in empty graph
+
+        # Add a single vertex with name "A1".
+        u1 = self.g.addVertex(Vertex('u1', 'A', 1))
+
+        self.assertIsNone(self.g.hasVertex('X'))       # there is no "X"
+        self.assertIsNone(self.g.hasVertex('A2'))      # there is no "A2"
+        self.assertIsNone(self.g.hasVertex('X1'))      # there is no "X1"
+        self.assertEqual(self.g.hasVertex('A1'), u1)   # but there is an A1
+    
+    # =========================================================================
     def testHasEdge(self):
         # Build u0 -> u1 -> u2
         self.g.addEdge(Vertex('u0', 'A'), Vertex('u1', 'B'))
