@@ -1,7 +1,7 @@
 import unittest
 
-from Graph import Graph
-from Vertex import Vertex
+from src.Graph import Graph
+from src.Vertex import Vertex
 
 class TestGraphClass(unittest.TestCase):
 

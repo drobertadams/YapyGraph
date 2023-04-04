@@ -1,6 +1,6 @@
 import unittest
 
-from Vertex import Vertex
+from src.Vertex import Vertex
 
 class TestVertexClass(unittest.TestCase):
 
