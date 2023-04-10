@@ -3,7 +3,7 @@ import logging
 import pickle
 import sys
 
-from Vertex import Vertex
+from YapyGraph.src.Vertex import Vertex
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
