@@ -56,7 +56,7 @@ class Vertex(object):
                 name += label
             else:
                 for l in label:
-                    name += l
+                    name += str(l)
 
         # Attach the number, if there is one.
         if number is not None:

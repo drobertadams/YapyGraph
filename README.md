@@ -38,6 +38,8 @@ Only one method is available. Besides this, a Vertex doesn't "do" anything.
 
 Unit tests are located in `tests`. Run `nosetests` to run all the unit tests.
 
+nosetests --with-path=.. tests/testGraph.py
+
 # Setup
 
 1. `git clone` this repo
@@ -45,3 +47,4 @@ Unit tests are located in `tests`. Run `nosetests` to run all the unit tests.
 3. `cd PATH_TO_YAPYGRAPH`
 4. "Activate" the venv: `source bin/activate`
 5. Install nose: `pip install nose`
+6. Install pathmunge for nose: `pip install nose-pathmunge`
