@@ -190,7 +190,7 @@ class Graph(object):
         return endVertex in self._edges[startVID]
 
     # =========================================================================
-    def hasVertex(self, name:str) -> Vertex:
+    def getVertex(self, name:str) -> Vertex:
         """
         Returns the first Vertex in this graph that has the given name, 
         or None.
@@ -268,7 +268,7 @@ class Graph(object):
         return solutions
 
     # =========================================================================
-    def vertices(self):
+    def vertices(self) -> list:
         """
         Returns a list of Vertex objects in this graph.
         """
